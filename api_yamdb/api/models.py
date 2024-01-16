@@ -14,7 +14,11 @@ class Title(models.Model):
 
 
 class Genre(models.Model):
-    pass
+    name = models.CharField(max_length=16)
+    slug = models.SlugField(unique=True, max_length=16)
+
+    def __str__(self):
+        return self.name
 
 
 class Category(models.Model):
