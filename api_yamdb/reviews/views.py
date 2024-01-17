@@ -1,10 +1,10 @@
-from django.core.exceptions import PermissionDenied
+# from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
 from .models import Review, Title
 from .permissions import AuthorOrReadOnly
-from .serializers import ReviewSerializer
+from .serializers import CommentSerializer, ReviewSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -26,4 +26,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     #     if serializer.instance.author != self.request.user:
     #         raise PermissionDenied('Нельзя изменять чужой отзыв!')
     #     super(ReviewViewSet, self).perform_update(serializer)
-        
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (AuthorOrReadOnly,)
+
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
