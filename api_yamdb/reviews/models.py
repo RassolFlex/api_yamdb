@@ -36,12 +36,21 @@ class CustomUser(AbstractUser):
         ('moderator', 'Модератор'),
         ('admin', 'Администратор'),
     )
-    username = models.CharField(max_length=150, null=True, blank=True)
-    first_name = models.CharField(max_length=150, null=True, blank=True)
-    last_name = models.CharField(max_length=150, null=True, blank=True)
-    role = models.CharField('Роль', max_length=30,
-                            choices=ROLES, default='user')
-    email = models.EmailField('email address', max_length=254, unique=True)
+    username = models.CharField(
+        'Логин', max_length=150, unique=True
+    )
+    first_name = models.CharField(
+        'Имя', max_length=150, null=True, blank=True
+    )
+    last_name = models.CharField(
+        'Фамилия', max_length=150, null=True, blank=True
+    )
+    role = models.CharField(
+        'Роль', max_length=30, choices=ROLES, default='user'
+    )
+    email = models.EmailField(
+        'email address', max_length=254, unique=True
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
