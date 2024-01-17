@@ -16,8 +16,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genres = serializers.SlugRelatedField()
-    category = serializers.SlugRelatedField()
+    # genres = serializers.SlugRelatedField()
+    # category = serializers.SlugRelatedField()
 
     class Meta:
         model = Title
