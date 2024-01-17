@@ -5,10 +5,22 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import TitleViewSet, CustomUserViewSet
+from reviews.views import CommentViewSet, ReviewViewSet
+from .views import TitleViewSet, GenreViewSet, CategoryViewSet, CustomUserViewSet
+
 
 router_v1 = routers.DefaultRouter()
 router_v1.register(r'titles', TitleViewSet)
+router_v1.register(r'genres', GenreViewSet)
+router_v1.register(r'categories', CategoryViewSet)
+router_v1.register(
+    '^titles/(?P<title_id>.+)/reviews', ReviewViewSet, basename='review'
+)
+router_v1.register(
+    '^titles/(?P<title_id>.+)/reviews/(?P<review_id>.+)/comments',
+    CommentViewSet,
+    basename='comment'
+)
 router_v1.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
