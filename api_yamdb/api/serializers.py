@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from reviews.models import Title, Genre, Category
+from reviews.models import Title, Genre, Category, CustomUser
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -29,4 +29,18 @@ class TitleSerializer(serializers.ModelSerializer):
             'description',
             'genre',
             'category',
+        )
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
         )

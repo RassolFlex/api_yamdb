@@ -32,7 +32,35 @@ class Category(models.Model):
 
 
 class CustomUser(AbstractUser):
-    bio = models.TextField('Биография', blank=True)
+    ROLES = (
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Администратор'),
+    )
+    username = models.CharField(
+        'Логин', max_length=150, unique=True
+    )
+    first_name = models.CharField(
+        'Имя', max_length=150, null=True, blank=True
+    )
+    last_name = models.CharField(
+        'Фамилия', max_length=150, null=True, blank=True
+    )
+    role = models.CharField(
+        'Роль', max_length=30, choices=ROLES, default='user'
+    )
+    email = models.EmailField(
+        'email address', max_length=254, unique=True
+    )
+    bio = models.TextField(
+        'Информация', null=True, blank=True
+    )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    def __str__(self):
+        return f'{self.username}'
 
 
 class Review(models.Model):
