@@ -31,4 +31,14 @@ class Category(models.Model):
 
 
 class CustomUser(AbstractUser):
-    bio = models.TextField('Биография', blank=True)
+    ROLES = (
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Администратор'),
+    )
+    role = models.CharField('Роль', max_length=30,
+                            choices=ROLES, default='user')
+    email = models.EmailField('email address', unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
