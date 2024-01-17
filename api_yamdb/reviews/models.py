@@ -51,6 +51,9 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         'email address', max_length=254, unique=True
     )
+    bio = models.TextField(
+        'Информация', null=True, blank=True
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
