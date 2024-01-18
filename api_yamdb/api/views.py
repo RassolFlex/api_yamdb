@@ -5,14 +5,14 @@ from reviews.models import Title, Genre, Category, CustomUser
 from .serializers import TitleSerializer, GenreSerializer, CategorySerializer, CustomUserSerializer
 
 
-class DestroyPatchListViewSet(mixins.ListModelMixin,
+class DestroyCreateListViewSet(mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
-                              mixins.UpdateModelMixin,
+                              mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
     pass
 
 
-class TitleViewSet(DestroyPatchListViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
 
@@ -24,11 +24,12 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
 
-class GenreViewSet(viewsets.ModelViewSet):
+
+class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(DestroyCreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
