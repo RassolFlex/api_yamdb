@@ -11,7 +11,13 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
                               mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
-    pass
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
+
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -33,22 +39,8 @@ class GenreViewSet(DestroyCreateListViewSet):
     serializer_class = GenreSerializer
     permission_classes = [IsAuthorOrReadOnly]
 
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [IsAdminUser]
-        else:
-            permission_classes = [IsAuthorOrReadOnly]
-        return [permission() for permission in permission_classes]
-
 
 class CategoryViewSet(DestroyCreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthorOrReadOnly]
-
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [IsAdminUser]
-        else:
-            permission_classes = [IsAuthorOrReadOnly]
-        return [permission() for permission in permission_classes]
