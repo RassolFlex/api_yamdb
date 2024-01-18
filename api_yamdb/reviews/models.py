@@ -5,7 +5,7 @@ from django.db import models
 
 class Title(models.Model):
     name = models.CharField(max_length=28)
-    year = models.DateField()  # Предполагаю должен быть интегер
+    year = models.IntegerField()
     rating = models.IntegerField()
     description = models.TextField()
     genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
@@ -16,16 +16,16 @@ class Title(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=16)
-    slug = models.SlugField(unique=True, max_length=16)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=16)
-    slug = models.SlugField(unique=True, max_length=16)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name

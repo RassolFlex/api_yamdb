@@ -19,7 +19,6 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
         return [permission() for permission in permission_classes]
 
 
-
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
