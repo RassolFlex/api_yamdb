@@ -3,6 +3,7 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from reviews.models import Title, Genre, Category, CustomUser
 from .serializers import TitleSerializer, GenreSerializer, CategorySerializer, CustomUserSerializer
+from .permissions import IsAuthorOrReadOnly
 
 
 class DestroyCreateListViewSet(mixins.ListModelMixin,
@@ -15,6 +16,7 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -28,8 +30,10 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
 
 class CategoryViewSet(DestroyCreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthorOrReadOnly]
