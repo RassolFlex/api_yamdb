@@ -1,8 +1,13 @@
 from rest_framework import viewsets, mixins, filters
 from rest_framework.pagination import LimitOffsetPagination
+from django.core.mail import send_mail
+from django.http.response import JsonResponse
 
 from reviews.models import Title, Genre, Category, CustomUser
-from .serializers import TitleSerializer, GenreSerializer, CategorySerializer, CustomUserSerializer
+from .serializers import (TitleSerializer,
+                          GenreSerializer,
+                          CategorySerializer,
+                          CustomUserSerializer)
 
 
 class DestroyPatchListViewSet(mixins.ListModelMixin,
@@ -25,9 +30,26 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
 
-class SignupViewSet(mixins.CreateModelMixin,
-                    viewsets.GenericViewSet):
+class CustomCreateViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
     pass
+
+
+class SignupViewSet(CustomCreateViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+
+    def create(self, request):
+        email = self.request.data['email']
+        username = self.request.data['username']
+        send_mail(
+            subject='confirmation_code',
+            message=f'Your confirm code: "{username}confirmcode"',
+            from_email='yamdb@yamdb.api',
+            recipient_list=[email],
+            fail_silently=True,
+        )
+        return JsonResponse(data=self.request.data)
 
 
 class GenreViewSet(viewsets.ModelViewSet):

@@ -6,7 +6,11 @@ from rest_framework_simplejwt.views import (
 )
 
 from reviews.views import CommentViewSet, ReviewViewSet
-from .views import SignupViewSet, TitleViewSet, GenreViewSet, CategoryViewSet, CustomUserViewSet
+from .views import (TitleViewSet,
+                    GenreViewSet,
+                    CategoryViewSet,
+                    CustomUserViewSet,
+                    SignupViewSet)
 
 
 router_v1 = routers.DefaultRouter()
