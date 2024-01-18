@@ -14,6 +14,13 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('name', 'slug',)
 
+    def validate(self, attrs):
+        if len(attrs['slug']) > 50:
+            raise serializers.ValidationError(
+                'Max 50 characters allowed'
+            )
+        return attrs
+
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(read_only=True, slug_field='slug')
