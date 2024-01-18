@@ -24,6 +24,12 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
 
+
+class SignupViewSet(mixins.CreateModelMixin,
+                    viewsets.GenericViewSet):
+    pass
+
+
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer

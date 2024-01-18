@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from reviews.views import CommentViewSet, ReviewViewSet
-from .views import TitleViewSet, GenreViewSet, CategoryViewSet, CustomUserViewSet
+from .views import SignupViewSet, TitleViewSet, GenreViewSet, CategoryViewSet, CustomUserViewSet
 
 
 router_v1 = routers.DefaultRouter()
@@ -22,6 +22,7 @@ router_v1.register(
     basename='comment'
 )
 router_v1.register(r'users', CustomUserViewSet)
+router_v1.register('auth/signup', SignupViewSet, basename='signup')
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
