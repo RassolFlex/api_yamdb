@@ -6,18 +6,25 @@ from reviews.models import Title, Genre, Category, CustomUser
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name',)
+        fields = ('name', 'slug',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name',)
+        fields = ('name', 'slug',)
+
+    def validate(self, attrs):
+        if len(attrs['slug']) > 50:
+            raise serializers.ValidationError(
+                'Max 50 characters allowed'
+            )
+        return attrs
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genres = serializers.SlugRelatedField()
-    category = serializers.SlugRelatedField()
+    genre = serializers.SlugRelatedField(read_only=True, slug_field='slug')
+    category = serializers.SlugRelatedField(read_only=True, slug_field='slug')
 
     class Meta:
         model = Title
