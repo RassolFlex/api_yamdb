@@ -6,7 +6,7 @@ from django.db import models
 class Title(models.Model):
     name = models.CharField(max_length=28)
     year = models.IntegerField()
-    rating = models.IntegerField()
+    rating = models.IntegerField(null=True)
     description = models.TextField()
     genre = models.ManyToManyField('Genre', through='GenreTitle')
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
