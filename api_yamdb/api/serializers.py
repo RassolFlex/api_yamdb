@@ -1,6 +1,8 @@
+from statistics import mean
+
 from rest_framework import serializers
 
-from reviews.models import Title, Genre, Category, CustomUser
+from reviews.models import Category, CustomUser, Genre, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -25,6 +27,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(read_only=True, slug_field='slug')
     category = serializers.SlugRelatedField(read_only=True, slug_field='slug')
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -37,6 +40,11 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
+
+    def get_rating(self, obj):
+        reviews = Title.objects.get(id=obj.id).reviews
+        scores = [score['score'] for score in reviews.values('score')]
+        return int(mean(scores))
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
