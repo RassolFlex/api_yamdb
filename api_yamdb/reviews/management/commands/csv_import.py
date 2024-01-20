@@ -19,5 +19,5 @@ class Command(BaseCommand):
             model_dict['pk'] = pk
             model_dict['fields'] = parsed[0]
             csv_data.append(model_dict)
-        with open('data.json', 'a') as f:
+        with open('data.json', 'w') as f:
             json.dump(csv_data, f, ensure_ascii=False, indent=4)
