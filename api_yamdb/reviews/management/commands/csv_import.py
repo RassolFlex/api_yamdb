@@ -15,7 +15,9 @@ class Command(BaseCommand):
             dataframe = pandas.read_csv(Path(f'static/data/{file}'))
             json_file = dataframe.to_json(orient='records')
             parsed = json.loads(json_file)
+            pk = parsed[0].pop('id')
+            model_dict['pk'] = pk
             model_dict['fields'] = parsed[0]
             csv_data.append(model_dict)
-        with open('data.json', 'w') as f:
+        with open('data.json', 'a') as f:
             json.dump(csv_data, f, ensure_ascii=False, indent=4)
