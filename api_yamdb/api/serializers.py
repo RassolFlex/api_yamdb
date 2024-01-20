@@ -34,6 +34,12 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
 
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        max_length=150,
+        required=True
+    )
+
     class Meta:
         model = CustomUser
         fields = (
@@ -43,4 +49,44 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'last_name',
             'bio',
             'role',
+        )
+
+
+class CreateCustomUserSerializer(serializers.ModelSerializer):
+
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        max_length=150,
+        required=True
+    )
+    email = serializers.EmailField(
+        max_length=150,
+        required=True
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+        )
+
+
+class CustomUserTokenSerializer(serializers.ModelSerializer):
+
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        max_length=150,
+        required=True
+    )
+    confirmation_code = serializers.CharField(
+        max_length=170,
+        required=True
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'confirmation_code',
         )
