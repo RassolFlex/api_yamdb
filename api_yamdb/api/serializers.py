@@ -44,6 +44,8 @@ class TitleSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         reviews = Title.objects.get(id=obj.id).reviews
         scores = [score['score'] for score in reviews.values('score')]
+        if len(scores) == 0:
+            return 'None'
         return int(mean(scores))
 
 
