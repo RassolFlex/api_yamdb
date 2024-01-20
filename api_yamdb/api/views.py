@@ -1,11 +1,13 @@
-from rest_framework import status, viewsets, mixins, filters
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Title, Genre, Category, CustomUser
+from reviews.models import Category, CustomUser, Genre, Title
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
@@ -14,16 +16,22 @@ from .serializers import (TitleSerializer,
                           CustomUserTokenSerializer)
 
 
-class DestroyPatchListViewSet(mixins.ListModelMixin,
+class DestroyCreateListViewSet(mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
-                              mixins.UpdateModelMixin,
+                              mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
-    pass
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
 
 
-class TitleViewSet(DestroyPatchListViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -93,11 +101,13 @@ class GetTokenViewSet(CustomCreateViewSet):
         return Response(token, status=status.HTTP_200_OK)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(DestroyCreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthorOrReadOnly]

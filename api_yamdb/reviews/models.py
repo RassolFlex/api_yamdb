@@ -5,10 +5,9 @@ from django.db import models
 
 class Title(models.Model):
     name = models.CharField(max_length=28)
-    year = models.DateField()  # Предполагаю должен быть интегер
-    rating = models.IntegerField()
+    year = models.IntegerField()
     description = models.TextField()
-    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    genre = models.ManyToManyField('Genre', through='GenreTitle')
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -16,16 +15,16 @@ class Title(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=16)
-    slug = models.SlugField(unique=True, max_length=16)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=16)
-    slug = models.SlugField(unique=True, max_length=16)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
@@ -83,9 +82,6 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='comments'
-    )
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
@@ -97,3 +93,8 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
