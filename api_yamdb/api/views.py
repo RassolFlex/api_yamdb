@@ -5,6 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action
 
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAuthorOrReadOnly
@@ -17,9 +18,9 @@ from .serializers import (TitleSerializer,
 
 
 class DestroyCreateListViewSet(mixins.ListModelMixin,
-                              mixins.DestroyModelMixin,
-                              mixins.CreateModelMixin,
-                              viewsets.GenericViewSet):
+                               mixins.DestroyModelMixin,
+                               mixins.CreateModelMixin,
+                               viewsets.GenericViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = [IsAdminUser]
@@ -37,9 +38,20 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    lookup_field = 'username'
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
+
+
+class MeViewSet(mixins.ListModelMixin,
+                mixins.UpdateModelMixin,
+                viewsets.GenericViewSet):
+    serializer_class = CreateCustomUserSerializer
+
+    def get_queryset(self):
+        return get_object_or_404(CustomUser,
+                                 username=self.request.data['username'])
 
 
 class CustomCreateViewSet(mixins.CreateModelMixin,
@@ -87,7 +99,7 @@ class GetTokenViewSet(CustomCreateViewSet):
     def create(self, request, *args, **kwargs):
         serializer = CustomUserTokenSerializer(data=request.data)
         serializer.is_valid()
-        username = request.POST.get('username', False)
+        username = request.data.get('username', False)
         if not username:
             return Response({'username': 'username is empty'},
                             status=status.HTTP_400_BAD_REQUEST)
