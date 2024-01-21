@@ -5,6 +5,11 @@ from django.db import models
 
 class Title(models.Model):
     name = models.CharField(max_length=28)
+    author = models.ForeignKey(
+        'CustomUser',
+        on_delete=models.SET_NULL,
+        null=True
+    )
     year = models.IntegerField()
     description = models.TextField()
     genre = models.ManyToManyField('Genre', through='GenreTitle')
