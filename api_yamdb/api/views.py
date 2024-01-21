@@ -5,7 +5,7 @@ from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.permissions import IsAdminUser
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAuthorOrReadOnly, IsAdmin
@@ -22,6 +22,9 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
                               mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
     pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_fields = ('name',)
+    search_fields = ('name',)
 
     def get_permissions(self):
         if self.action == 'create':

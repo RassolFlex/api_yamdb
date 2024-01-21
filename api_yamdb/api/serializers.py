@@ -28,7 +28,6 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField()
-    user = serializers.SlugRelatedField(slug_field='username', queryset=CustomUser.objects.all())
 
     class Meta:
         model = Title
