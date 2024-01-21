@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, CustomUser, Genre, Title
-from .permissions import IsAuthorOrReadOnly, IsAdmin
+from .permissions import IsAdminOrReadOnly
 from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
@@ -25,19 +25,20 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('name',)
     search_fields = ('name',)
+    permission_classes = [IsAdminOrReadOnly]
 
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [IsAdmin]
-        else:
-            permission_classes = [IsAuthorOrReadOnly]
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     if self.action == 'create':
+    #         permission_classes = [IsAdmin]
+    #     else:
+    #         permission_classes = [IsAuthorOrReadOnly]
+    #     return [permission() for permission in permission_classes]
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
 
 
@@ -111,10 +112,8 @@ class GetTokenViewSet(CustomCreateViewSet):
 class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAuthorOrReadOnly]
 
 
 class CategoryViewSet(DestroyCreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthorOrReadOnly]
