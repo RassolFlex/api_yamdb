@@ -28,6 +28,7 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField()
+    user = serializers.SlugRelatedField(slug_field='username', queryset=CustomUser.objects.all())
 
     class Meta:
         model = Title
@@ -45,7 +46,7 @@ class TitleSerializer(serializers.ModelSerializer):
         reviews = Title.objects.get(id=obj.id).reviews
         scores = [score['score'] for score in reviews.values('score')]
         if len(scores) == 0:
-            return 'None'
+            return None
         return int(mean(scores))
 
 

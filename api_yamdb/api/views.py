@@ -5,6 +5,7 @@ from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import IsAdminUser
 
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAuthorOrReadOnly, IsAdmin
@@ -20,6 +21,8 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
                               mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
+    pagination_class = PageNumberPagination
+
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = [IsAdmin]
