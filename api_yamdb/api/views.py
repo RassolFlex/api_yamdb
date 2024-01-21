@@ -1,7 +1,8 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -31,6 +32,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = [IsAuthorOrReadOnly]
+    pagination_class = PageNumberPagination
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):

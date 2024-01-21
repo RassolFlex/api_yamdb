@@ -2,7 +2,7 @@ from statistics import mean
 
 from rest_framework import serializers
 
-from reviews.models import Category, CustomUser, Genre, Title
+from reviews.models import Category, CustomUser, Genre, Title, GenreTitle
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -25,7 +25,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(read_only=True, slug_field='slug')
+    genre = GenreSerializer(read_only=True, many=True)
+    category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
