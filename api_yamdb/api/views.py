@@ -2,12 +2,11 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, CustomUser, Genre, Title
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsAdmin
 from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
@@ -22,7 +21,7 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
                               viewsets.GenericViewSet):
     def get_permissions(self):
         if self.action == 'create':
-            permission_classes = [IsAdminUser]
+            permission_classes = [IsAdmin]
         else:
             permission_classes = [IsAuthorOrReadOnly]
         return [permission() for permission in permission_classes]

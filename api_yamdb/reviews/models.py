@@ -8,7 +8,12 @@ class Title(models.Model):
     year = models.IntegerField()
     description = models.TextField()
     genre = models.ManyToManyField('Genre', through='GenreTitle')
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='titles'
+    )
 
     def __str__(self):
         return self.name
