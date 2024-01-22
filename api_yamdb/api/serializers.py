@@ -2,7 +2,7 @@ from statistics import mean
 
 from rest_framework import serializers
 
-from reviews.models import Category, CustomUser, Genre, Title
+from reviews.models import Category, CustomUser, Genre, Title, GenreTitle
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -16,17 +16,10 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('name', 'slug',)
 
-    def validate(self, attrs):
-        if len(attrs['slug']) > 50:
-            raise serializers.ValidationError(
-                'Max 50 characters allowed'
-            )
-        return attrs
-
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(read_only=True, slug_field='slug')
-    category = serializers.SlugRelatedField(read_only=True, slug_field='slug')
+    genre = GenreSerializer(read_only=True, many=True)
+    category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
@@ -41,11 +34,25 @@ class TitleSerializer(serializers.ModelSerializer):
             'category',
         )
 
+    def create(self, validated_data):
+        category = self.initial_data['category']
+        category = Category.objects.get(slug=category)
+        genre_data = self.initial_data['genre']
+        validated_data['category'] = category
+        title = Title.objects.create(**validated_data)
+        print(self.initial_data)
+        for genre in genre_data:
+            current_genre, status = Genre.objects.get_or_create(
+                slug=genre
+            )
+            GenreTitle.objects.create(genre=current_genre, title=title)
+        return title
+
     def get_rating(self, obj):
         reviews = Title.objects.get(id=obj.id).reviews
         scores = [score['score'] for score in reviews.values('score')]
         if len(scores) == 0:
-            return 'None'
+            return None
         return int(mean(scores))
 
 

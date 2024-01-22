@@ -1,14 +1,18 @@
+from urllib import request
+
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAdminUser
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework.decorators import action
 
 from reviews.models import Category, CustomUser, Genre, Title
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAdminOrReadOnly
 from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
@@ -20,19 +24,56 @@ from .serializers import (TitleSerializer,
 class DestroyCreateListViewSet(mixins.ListModelMixin,
                                mixins.DestroyModelMixin,
                                mixins.CreateModelMixin,
+                               mixins.UpdateModelMixin,
                                viewsets.GenericViewSet):
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [IsAdminUser]
-        else:
-            permission_classes = [IsAuthorOrReadOnly]
-        return [permission() for permission in permission_classes]
+    lookup_field = 'slug'
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_fields = ('name',)
+    search_fields = ('name',)
+    permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            raise PermissionDenied('')
+        serializer.save()
+
+    def perform_update(self, serializer):
+        raise MethodNotAllowed(method='patch')
+
+
+class CustomCreateViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
+    pass
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = PageNumberPagination
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            raise PermissionDenied('')
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if self.request.method == 'PUT':
+            raise MethodNotAllowed(method='put')
+        if self.request.user.role != 'admin':
+            raise MethodNotAllowed(method='patch')
+        serializer.save()
+
+
+class GenreViewSet(DestroyCreateListViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class CategoryViewSet(DestroyCreateListViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -52,11 +93,6 @@ class MeViewSet(mixins.ListModelMixin,
     def get_queryset(self):
         return get_object_or_404(CustomUser,
                                  username=self.request.data['username'])
-
-
-class CustomCreateViewSet(mixins.CreateModelMixin,
-                          viewsets.GenericViewSet):
-    pass
 
 
 class SignupViewSet(CustomCreateViewSet):
@@ -111,15 +147,3 @@ class GetTokenViewSet(CustomCreateViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
         token = {'token': str(AccessToken.for_user(user))}
         return Response(token, status=status.HTTP_200_OK)
-
-
-class GenreViewSet(DestroyCreateListViewSet):
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-    permission_classes = [IsAuthorOrReadOnly]
-
-
-class CategoryViewSet(DestroyCreateListViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [IsAuthorOrReadOnly]

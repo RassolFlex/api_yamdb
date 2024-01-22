@@ -5,10 +5,19 @@ from django.db import models
 
 class Title(models.Model):
     name = models.CharField(max_length=28)
+    author = models.ForeignKey(
+        'CustomUser',
+        on_delete=models.SET_NULL,
+        null=True
+    )
     year = models.IntegerField()
-    description = models.TextField()
+    description = models.TextField(null=True)
     genre = models.ManyToManyField('Genre', through='GenreTitle')
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.CASCADE,
+        related_name='titles'
+    )
 
     def __str__(self):
         return self.name
