@@ -5,7 +5,6 @@ from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
-from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -15,7 +14,7 @@ from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
                           CustomUserSerializer,
-                          CreateCustomUserSerializer,
+                          SignupSerializer,
                           CustomUserTokenSerializer,
                           UserMeSerializer)
 
@@ -79,37 +78,21 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     lookup_field = 'username'
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter, filters.SearchFilter)
+    search_fields = ('username',)
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
     permission_classes = [AdminOnly]
-
-    def list(self, request):
-        if request.data.get('role') == 'admin':
-            return super().list(self)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def create(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_201_CREATED)
-
-    # def update(self, request, username, pk=None):
-    #     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    # def get_permissions(self):
-    #     """
-    #     Instantiates and returns the list of permissions that this view requires.
-    #     """
-    #     if self.action == 'list':
-    #         permission_classes = [permissions.IsAdminUser]
-    #     elif self.action == 'retrieve':
-    #         permission_classes = [permissions.IsAdminUser]
-    #     elif self.action == 'detail':
-    #         permission_classes = [permissions.IsAdminUser]
-    #     else:
-    #         permission_classes = [permissions.IsAuthenticated]
-    #     return [permission() for permission in permission_classes]
+        CustomUser.objects.get_or_create(
+            username=request.data['username'], email=request.data['email']
+        )
+        return Response(data=request.data, status=status.HTTP_201_CREATED)
 
 
 class MeViewSet(mixins.RetrieveModelMixin,
@@ -125,27 +108,25 @@ class MeViewSet(mixins.RetrieveModelMixin,
 
 class SignupViewSet(CustomCreateViewSet):
     queryset = CustomUser.objects.all()
-    serializer_class = CreateCustomUserSerializer
+    serializer_class = SignupSerializer
 
     def create(self, request):
-        serializer = CreateCustomUserSerializer(data=request.data)
+        if CustomUser.objects.filter(username=request.data.get('username')).first() is not None:
+            email = request.data['email']
+            username = request.data['username']
+            send_mail(
+                subject='confirmation_code',
+                message=f'Your confirm code: "{username}confirmcode"',
+                from_email='yamdb@yamdb.api',
+                recipient_list=[email],
+                fail_silently=True,
+            )
+            return Response(data=request.data, status=status.HTTP_200_OK)
+        serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = request.data['email']
         username = request.data['username']
-        if CustomUser.objects.filter(email=email).first() is not None:
-            if CustomUser.objects.filter(username=username).first() is None:
-                return Response(
-                    {'email': 'user with this email already exist'},
-                    status=status.HTTP_400_BAD_REQUEST)
-        if CustomUser.objects.filter(username=username).first() is not None:
-            if CustomUser.objects.filter(
-                    username=username).first().email != email:
-                return Response({'email': 'invalid email'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        if username == 'me':
-            return Response({'username': 'username "me" not allowed'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        CustomUser.objects.get_or_create(username=username, email=email)
+        user = CustomUser.objects.get_or_create(username=username, email=email)
         send_mail(
             subject='confirmation_code',
             message=f'Your confirm code: "{username}confirmcode"',
@@ -153,7 +134,9 @@ class SignupViewSet(CustomCreateViewSet):
             recipient_list=[email],
             fail_silently=True,
         )
-        return Response(request.data, status=status.HTTP_200_OK)
+        if user:
+            return Response(data=request.data, status=status.HTTP_200_OK)
+        return Response(data=request.data, status=status.HTTP_200_OK)
 
 
 class GetTokenViewSet(CustomCreateViewSet):

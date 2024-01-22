@@ -2,6 +2,7 @@ from statistics import mean
 import re
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, CustomUser, Genre, Title, GenreTitle
 
@@ -59,12 +60,6 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
 
-    # username = serializers.RegexField(
-    #     regex=r'^[\w.@+-]+\Z',
-    #     max_length=150,
-    #     required=True
-    # )
-
     class Meta:
         model = CustomUser
         fields = (
@@ -79,44 +74,75 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return CustomUser.objects.create()
 
+    def validate_username(self, username):
+        if username == 'me':
+            raise serializers.ValidationError(
+                'Username should not be equal "me".')
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, username):
+            raise serializers.ValidationError('Invalid username.')
+        return username
 
-class CreateCustomUserSerializer(serializers.ModelSerializer):
 
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z',
-        max_length=150,
-        required=True
-    )
-    email = serializers.EmailField(
-        max_length=150,
-        required=True
-    )
+class SignupSerializer(serializers.ModelSerializer):
+
+    # username = serializers.RegexField(
+    #     regex=r'^[\w.@+-]+\Z',
+    #     max_length=150
+    # )
 
     class Meta:
         model = CustomUser
         fields = (
             'username',
-            'email',
+            'email'
         )
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=CustomUser.objects.all(),
+        #         fields=('username', 'email'),
+        #         message='Email is invalid.'
+        #     )
+        # ]
+
+    # def validate_email(self, email):
+    #     username = self.initial_data.get('username')
+    #     if CustomUser.objects.filter(username=username).first() is not None:
+    #         user = CustomUser.objects.get(username=username)
+    #         if user.email == email:
+    #             raise serializers.ValidationError('Invalid email.')
+    #         return email
+    #     return email
+        # if CustomUser.objects.filter(email=email).first() is not None:
+
+    # def create(self, validated_data):
+    #     username = validated_data['username']
+    #     email = validated_data['email']
+    #     if CustomUser.objects.get(username=username):
+    #         raise serializers.ValidationError(
+    #             'User with this username has been exist.')
+    #     if CustomUser.objects.get(email=email):
+    #         raise serializers.ValidationError(
+    #             'User with this email has been exist.')
+    #     user = CustomUser.objects.create(**validated_data)
+    #     return user
+
+    def validate_username(self, username):
+        if username == 'me':
+            raise serializers.ValidationError(
+                'Username should not be equal "me".')
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, username):
+            raise serializers.ValidationError('Invalid username.')
+        return username
 
 
 class CustomUserTokenSerializer(serializers.ModelSerializer):
 
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z',
-        max_length=150,
-        required=True
-    )
-    confirmation_code = serializers.CharField(
-        max_length=170,
-        required=True
-    )
-
     class Meta:
         model = CustomUser
         fields = (
             'username',
-            'confirmation_code',
         )
 
 
@@ -135,5 +161,11 @@ class UserMeSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, username):
-        if re.match(r'^[\w.@+-]+\Z', username):
-            return username
+        if not username:
+            raise serializers.ValidationError('Username must be not empty.')
+        if len(username) > 150:
+            raise serializers.ValidationError('Username over 150 length.')
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, username):
+            raise serializers.ValidationError('Invalid username.')
+        return username
