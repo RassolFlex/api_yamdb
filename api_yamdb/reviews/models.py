@@ -11,12 +11,11 @@ class Title(models.Model):
         null=True
     )
     year = models.IntegerField()
-    description = models.TextField()
+    description = models.TextField(null=True)
     genre = models.ManyToManyField('Genre', through='GenreTitle')
     category = models.ForeignKey(
         'Category',
         on_delete=models.CASCADE,
-        null=True,
         related_name='titles'
     )
 

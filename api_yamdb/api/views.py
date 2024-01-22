@@ -51,6 +51,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
 
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            raise PermissionDenied('')
+        serializer.save()
+
+    def perform_update(self, serializer):
+        raise MethodNotAllowed(method='patch')
+
 
 class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
