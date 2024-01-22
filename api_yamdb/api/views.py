@@ -57,7 +57,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def perform_update(self, serializer):
-        raise MethodNotAllowed(method='patch')
+        if self.request.method == 'PUT':
+            raise MethodNotAllowed(method='put')
+        if self.request.user.role != 'admin':
+            raise MethodNotAllowed(method='patch')
+        serializer.save()
 
 
 class GenreViewSet(DestroyCreateListViewSet):
