@@ -1,4 +1,5 @@
 from statistics import mean
+import re
 
 from rest_framework import serializers
 
@@ -58,11 +59,11 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
 
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z',
-        max_length=150,
-        required=True
-    )
+    # username = serializers.RegexField(
+    #     regex=r'^[\w.@+-]+\Z',
+    #     max_length=150,
+    #     required=True
+    # )
 
     class Meta:
         model = CustomUser
@@ -74,6 +75,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+
+    def create(self, validated_data):
+        return CustomUser.objects.create()
 
 
 class CreateCustomUserSerializer(serializers.ModelSerializer):
@@ -114,3 +118,22 @@ class CustomUserTokenSerializer(serializers.ModelSerializer):
             'username',
             'confirmation_code',
         )
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        read_only_fields = ('role',)
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
+
+    def validate_username(self, username):
+        if re.match(r'^[\w.@+-]+\Z', username):
+            return username

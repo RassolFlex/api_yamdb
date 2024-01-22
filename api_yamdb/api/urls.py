@@ -27,7 +27,10 @@ router_v1.register(
 router_v1.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
-    path('v1/users/me/', MeViewSet.as_view({'get': 'list'}), name='me'),
+    path('v1/users/me/', MeViewSet.as_view({
+        'get': 'retrieve',
+        'patch': 'partial_update'
+    }), name='me'),
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/',
          SignupViewSet.as_view({'post': 'create'}), name='signup'),

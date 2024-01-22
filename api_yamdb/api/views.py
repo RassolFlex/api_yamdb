@@ -1,24 +1,23 @@
-from urllib import request
-
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, status, viewsets, permissions
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, CustomUser, Genre, Title
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, AdminOnly
 from .serializers import (TitleSerializer,
                           GenreSerializer,
                           CategorySerializer,
                           CustomUserSerializer,
                           CreateCustomUserSerializer,
-                          CustomUserTokenSerializer)
+                          CustomUserTokenSerializer,
+                          UserMeSerializer)
 
 
 class DestroyCreateListViewSet(mixins.ListModelMixin,
@@ -83,16 +82,45 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
+    permission_classes = [AdminOnly]
+
+    def list(self, request):
+        if request.data.get('role') == 'admin':
+            return super().list(self)
+
+    def create(self, request, *args, **kwargs):
+        serializer = CustomUserSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_201_CREATED)
+
+    # def update(self, request, username, pk=None):
+    #     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # def get_permissions(self):
+    #     """
+    #     Instantiates and returns the list of permissions that this view requires.
+    #     """
+    #     if self.action == 'list':
+    #         permission_classes = [permissions.IsAdminUser]
+    #     elif self.action == 'retrieve':
+    #         permission_classes = [permissions.IsAdminUser]
+    #     elif self.action == 'detail':
+    #         permission_classes = [permissions.IsAdminUser]
+    #     else:
+    #         permission_classes = [permissions.IsAuthenticated]
+    #     return [permission() for permission in permission_classes]
 
 
-class MeViewSet(mixins.ListModelMixin,
+class MeViewSet(mixins.RetrieveModelMixin,
                 mixins.UpdateModelMixin,
                 viewsets.GenericViewSet):
-    serializer_class = CreateCustomUserSerializer
+    serializer_class = UserMeSerializer
+    permission_classes = [permissions.IsAuthenticated,]
 
-    def get_queryset(self):
+    def get_object(self):
         return get_object_or_404(CustomUser,
-                                 username=self.request.data['username'])
+                                 username=self.request.user.username)
 
 
 class SignupViewSet(CustomCreateViewSet):
