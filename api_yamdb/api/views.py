@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
@@ -6,7 +8,7 @@ from rest_framework.pagination import (LimitOffsetPagination,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAdminOrReadOnly
 from .serializers import (TitleSerializer,
@@ -18,21 +20,29 @@ from .serializers import (TitleSerializer,
 
 
 class DestroyCreateListViewSet(mixins.ListModelMixin,
-                              mixins.DestroyModelMixin,
-                              mixins.CreateModelMixin,
-                              viewsets.GenericViewSet):
+                               mixins.DestroyModelMixin,
+                               mixins.CreateModelMixin,
+                               mixins.UpdateModelMixin,
+                               viewsets.GenericViewSet):
+    lookup_field = 'slug'
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('name',)
     search_fields = ('name',)
     permission_classes = [IsAdminOrReadOnly]
 
-    # def get_permissions(self):
-    #     if self.action == 'create':
-    #         permission_classes = [IsAdmin]
-    #     else:
-    #         permission_classes = [IsAuthorOrReadOnly]
-    #     return [permission() for permission in permission_classes]
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            raise PermissionDenied('')
+        serializer.save()
+
+    def perform_update(self, serializer):
+        raise MethodNotAllowed(method='patch')
+
+
+class CustomCreateViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
+    pass
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -42,17 +52,22 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
 
+class GenreViewSet(DestroyCreateListViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class CategoryViewSet(DestroyCreateListViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     filter_backends = (filters.OrderingFilter,)
     ordering_fields = '__all__'
     pagination_class = LimitOffsetPagination
-
-
-class CustomCreateViewSet(mixins.CreateModelMixin,
-                          viewsets.GenericViewSet):
-    pass
 
 
 class SignupViewSet(CustomCreateViewSet):
@@ -107,13 +122,3 @@ class GetTokenViewSet(CustomCreateViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
         token = {'token': str(AccessToken.for_user(user))}
         return Response(token, status=status.HTTP_200_OK)
-
-
-class GenreViewSet(DestroyCreateListViewSet):
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-
-
-class CategoryViewSet(DestroyCreateListViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
