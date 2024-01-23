@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAdminOrReadOnly, AdminOnly
@@ -51,7 +52,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre',)
+    filterset_fields = ('genre', 'category', 'year',)
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -59,8 +60,17 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializerForRead
 
     def filter_queryset(self, queryset):
-        if self.request.query_params.get('genre'):
-            return queryset.filter(genre__slug=self.request.query_params.get('genre'))
+        if self.request.query_params:
+            filters = {}
+            for key, value in self.request.query_params.items():
+                if key == 'year':
+                    filters[f'{key}'] = int(value)
+                    continue
+                if key == 'category' or key == 'genre':
+                    filters[f'{key}__slug'] = value
+                    continue
+                filters[key] = value
+            return queryset.filter(**filters)
         return super().filter_queryset(queryset)
 
     def perform_create(self, serializer):
