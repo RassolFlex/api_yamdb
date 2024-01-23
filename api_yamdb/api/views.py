@@ -90,6 +90,14 @@ class TitleViewSet(viewsets.ModelViewSet):
 class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    http_method_names = ['get', 'post', 'delete']
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
+        else:
+            self.permission_classes = [AdminOnly,]
+        return super(GenreViewSet, self).get_permissions()
 
 
 class CategoryViewSet(DestroyCreateListViewSet):
