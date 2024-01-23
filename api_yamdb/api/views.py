@@ -111,8 +111,13 @@ class SignupViewSet(CustomCreateViewSet):
     serializer_class = SignupSerializer
 
     def create(self, request):
-        if CustomUser.objects.filter(username=request.data.get('username')).first() is not None:
+        if CustomUser.objects.filter(
+                username=request.data.get('username')).first() is not None:
+            user = CustomUser.objects.filter(
+                username=request.data.get('username')).first()
             email = request.data['email']
+            if user.email != email:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             username = request.data['username']
             send_mail(
                 subject='confirmation_code',
