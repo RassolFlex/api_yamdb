@@ -51,11 +51,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'id'
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre', 'category', 'year',)
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.request.method == 'POST' or self.request.method == 'PATCH':
             return TitleSerializerForWrite
         return TitleSerializerForRead
 
