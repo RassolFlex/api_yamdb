@@ -7,11 +7,12 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q
 
-from reviews.models import Category, CustomUser, Genre, Title
+from reviews.models import Category, CustomUser, Genre, Review, Title
 from .permissions import IsAdminOrReadOnly, AdminOnly
-from .serializers import (TitleSerializerForRead,
+from .serializers import (CommentSerializer,
+                          ReviewSerializer,
+                          TitleSerializerForRead,
                           TitleSerializerForWrite,
                           GenreSerializer,
                           CategorySerializer,
@@ -194,3 +195,36 @@ class GetTokenViewSet(CustomCreateViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
         token = {'token': str(AccessToken.for_user(user))}
         return Response(token, status=status.HTTP_200_OK)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        # if self.request.user.is_authenticated != True:
+        #     raise PermissionDenied(
+        #         'Для создания отзыва необходимо авторизоваться!')
+        serializer.save(author=self.request.user, title=self.get_title())
+
+    # def perform_update(self, serializer):
+    #     if serializer.instance.author != self.request.user:
+    #         raise PermissionDenied('Нельзя изменять чужой отзыв!')
+    #     super(ReviewViewSet, self).perform_update(serializer)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_object(self):
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+
+    def get_queryset(self):
+        return self.get_review().comments.all()

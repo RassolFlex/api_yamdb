@@ -3,7 +3,13 @@ import re
 
 from rest_framework import serializers
 
-from reviews.models import Category, CustomUser, Genre, Title, GenreTitle
+from reviews.models import (Category,
+                            CustomUser,
+                            Genre,
+                            Title,
+                            GenreTitle,
+                            Comment,
+                            Review)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -169,3 +175,25 @@ class UserMeSerializer(serializers.ModelSerializer):
         if not re.match(pattern, username):
             raise serializers.ValidationError('Invalid username.')
         return username
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ('title',)
+        model = Review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ('title', 'review')
+        model = Comment
