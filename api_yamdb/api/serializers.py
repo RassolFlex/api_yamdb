@@ -37,10 +37,10 @@ class TitleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         category = self.initial_data['category']
         category = Category.objects.get(slug=category)
+        category = Category.objects.get(pk=category.id)
         genre_data = self.initial_data['genre']
         validated_data['category'] = category
         title = Title.objects.create(**validated_data)
-        print(self.initial_data)
         for genre in genre_data:
             current_genre, status = Genre.objects.get_or_create(
                 slug=genre
