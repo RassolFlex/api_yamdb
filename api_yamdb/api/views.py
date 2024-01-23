@@ -50,12 +50,18 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
-    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('genre',)
 
     def get_serializer_class(self):
         if self.action == 'create':
             return TitleSerializerForWrite
         return TitleSerializerForRead
+
+    def filter_queryset(self, queryset):
+        if self.request.query_params.get('genre'):
+            return queryset.filter(genre__slug=self.request.query_params.get('genre'))
+        return super().filter_queryset(queryset)
 
     def perform_create(self, serializer):
         if self.request.user.role != 'admin':
