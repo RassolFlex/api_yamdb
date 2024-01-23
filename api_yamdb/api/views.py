@@ -63,14 +63,14 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.request.query_params:
             filters = {}
             for key, value in self.request.query_params.items():
-                if key == 'year':
-                    filters[f'{key}'] = int(value)
-                    continue
                 if key == 'category' or key == 'genre':
                     filters[f'{key}__slug'] = value
                     continue
                 filters[key] = value
-            return queryset.filter(**filters)
+            try:
+                return queryset.filter(**filters)
+            except ValueError:
+                return super().filter_queryset(queryset)
         return super().filter_queryset(queryset)
 
     def perform_create(self, serializer):
