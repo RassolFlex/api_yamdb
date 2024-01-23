@@ -125,6 +125,7 @@ class SignupSerializer(serializers.ModelSerializer):
             'username',
             'email'
         )
+
         # validators = [
         #     UniqueTogetherValidator(
         #         queryset=CustomUser.objects.all(),
