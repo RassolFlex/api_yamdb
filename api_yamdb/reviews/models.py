@@ -89,6 +89,15 @@ class Review(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        # unique_together = ('author', 'title')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='only_one_user_review_to_title'
+            )
+        ]
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
