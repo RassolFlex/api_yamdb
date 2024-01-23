@@ -3,7 +3,13 @@ import re
 
 from rest_framework import serializers
 
-from reviews.models import Category, CustomUser, Genre, Title, GenreTitle
+from reviews.models import (Category,
+                            CustomUser,
+                            Genre,
+                            Title,
+                            GenreTitle,
+                            Comment,
+                            Review)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -113,17 +119,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.ModelSerializer):
 
-    # username = serializers.RegexField(
-    #     regex=r'^[\w.@+-]+\Z',
-    #     max_length=150
-    # )
-
     class Meta:
         model = CustomUser
         fields = (
             'username',
             'email'
         )
+
         # validators = [
         #     UniqueTogetherValidator(
         #         queryset=CustomUser.objects.all(),
@@ -131,28 +133,6 @@ class SignupSerializer(serializers.ModelSerializer):
         #         message='Email is invalid.'
         #     )
         # ]
-
-    # def validate_email(self, email):
-    #     username = self.initial_data.get('username')
-    #     if CustomUser.objects.filter(username=username).first() is not None:
-    #         user = CustomUser.objects.get(username=username)
-    #         if user.email == email:
-    #             raise serializers.ValidationError('Invalid email.')
-    #         return email
-    #     return email
-        # if CustomUser.objects.filter(email=email).first() is not None:
-
-    # def create(self, validated_data):
-    #     username = validated_data['username']
-    #     email = validated_data['email']
-    #     if CustomUser.objects.get(username=username):
-    #         raise serializers.ValidationError(
-    #             'User with this username has been exist.')
-    #     if CustomUser.objects.get(email=email):
-    #         raise serializers.ValidationError(
-    #             'User with this email has been exist.')
-    #     user = CustomUser.objects.create(**validated_data)
-    #     return user
 
     def validate_username(self, username):
         if username == 'me':
@@ -196,3 +176,25 @@ class UserMeSerializer(serializers.ModelSerializer):
         if not re.match(pattern, username):
             raise serializers.ValidationError('Invalid username.')
         return username
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ('title',)
+        model = Review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ('title', 'review')
+        model = Comment
