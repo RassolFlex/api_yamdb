@@ -92,6 +92,14 @@ class Review(models.Model):
         ])
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='only_one_review_to_title_from_user'
+            )
+        ]
+
     def __str__(self):
         return self.name
 

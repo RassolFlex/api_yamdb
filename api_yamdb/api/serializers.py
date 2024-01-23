@@ -2,6 +2,7 @@ from statistics import mean
 import re
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import (Category,
                             CustomUser,
@@ -182,11 +183,18 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
+    title = serializers.HiddenField(default=None)
 
     class Meta:
         fields = '__all__'
         read_only_fields = ('title',)
         model = Review
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('author', 'title')
+            )
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):

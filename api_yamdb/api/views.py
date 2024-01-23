@@ -9,7 +9,10 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, CustomUser, Genre, Review, Title
-from .permissions import IsAdminOrReadOnly, AdminOnly
+from .permissions import (IsAdminOrReadOnly,
+                          AdminOnly,
+                          IsAuthorOrModeratorOrReadOnly,
+                          AuthorOrReadOnly)
 from .serializers import (CommentSerializer,
                           ReviewSerializer,
                           TitleSerializerForRead,
@@ -199,7 +202,7 @@ class GetTokenViewSet(CustomCreateViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAuthorOrModeratorOrReadOnly,)
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -208,15 +211,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        # if self.request.user.is_authenticated != True:
-        #     raise PermissionDenied(
-        #         'Для создания отзыва необходимо авторизоваться!')
-        serializer.save(author=self.request.user, title=self.get_title())
-
-    # def perform_update(self, serializer):
-    #     if serializer.instance.author != self.request.user:
-    #         raise PermissionDenied('Нельзя изменять чужой отзыв!')
-    #     super(ReviewViewSet, self).perform_update(serializer)
+        author = CustomUser.objects.get(pk=self.request.user.id)
+        serializer.save(author=author, title=self.get_title())
 
 
 class CommentViewSet(viewsets.ModelViewSet):
