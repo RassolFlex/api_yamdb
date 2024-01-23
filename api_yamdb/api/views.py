@@ -10,7 +10,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, CustomUser, Genre, Title
 from .permissions import IsAdminOrReadOnly, AdminOnly
-from .serializers import (TitleSerializer,
+from .serializers import (TitleSerializerForRead,
+                          TitleSerializerForWrite,
                           GenreSerializer,
                           CategorySerializer,
                           CustomUserSerializer,
@@ -47,9 +48,14 @@ class CustomCreateViewSet(mixins.CreateModelMixin,
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return TitleSerializerForWrite
+        return TitleSerializerForRead
 
     def perform_create(self, serializer):
         if self.request.user.role != 'admin':
