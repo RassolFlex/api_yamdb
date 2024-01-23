@@ -18,9 +18,16 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug',)
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
+class TitleSerializerForWrite(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
     rating = serializers.SerializerMethodField()
 
     class Meta:
@@ -36,18 +43,39 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        category = self.initial_data['category']
-        category = Category.objects.get(slug=category)
-        genre_data = self.initial_data['genre']
-        validated_data['category'] = category
+        genre_data = validated_data.pop('genre')
         title = Title.objects.create(**validated_data)
-        print(self.initial_data)
         for genre in genre_data:
             current_genre, status = Genre.objects.get_or_create(
                 slug=genre
             )
             GenreTitle.objects.create(genre=current_genre, title=title)
         return title
+
+    def get_rating(self, obj):
+        reviews = Title.objects.get(id=obj.id).reviews
+        scores = [score['score'] for score in reviews.values('score')]
+        if len(scores) == 0:
+            return None
+        return int(mean(scores))
+
+
+class TitleSerializerForRead(serializers.ModelSerializer):
+    genre = GenreSerializer(read_only=True, many=True)
+    category = CategorySerializer(read_only=True)
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
 
     def get_rating(self, obj):
         reviews = Title.objects.get(id=obj.id).reviews

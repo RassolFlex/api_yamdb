@@ -28,7 +28,7 @@ class Genre(models.Model):
     slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Category(models.Model):
@@ -36,7 +36,7 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class CustomUser(AbstractUser):
