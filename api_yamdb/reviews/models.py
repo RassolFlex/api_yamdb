@@ -101,7 +101,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.name
+        return self.text
 
 
 class Comment(models.Model):
@@ -115,7 +115,7 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.text
 
 
 class GenreTitle(models.Model):

@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.core.exceptions import BadRequest
+from django.core import exceptions
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets, permissions
 from rest_framework.pagination import (LimitOffsetPagination,
