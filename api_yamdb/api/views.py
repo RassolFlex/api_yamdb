@@ -1,17 +1,17 @@
-from django.core.mail import send_mail
 from django.core.exceptions import BadRequest
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
-from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
 from rest_framework import (filters,
                             mixins,
                             status,
                             viewsets,
                             permissions)
+from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (Category,
                             Comment,
@@ -161,7 +161,8 @@ class SignupViewSet(CustomCreateViewSet):
                 username=request.data.get('username')).first()
             email = request.data['email']
             if user.email != email:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({'email': 'invalid email'},
+                                status=status.HTTP_400_BAD_REQUEST)
             username = request.data['username']
             send_mail(
                 subject='confirmation_code',
@@ -183,8 +184,6 @@ class SignupViewSet(CustomCreateViewSet):
             recipient_list=[email],
             fail_silently=True,
         )
-        if user:
-            return Response(data=request.data, status=status.HTTP_200_OK)
         return Response(data=request.data, status=status.HTTP_200_OK)
 
 
@@ -202,7 +201,12 @@ class GetTokenViewSet(CustomCreateViewSet):
         user = get_object_or_404(
             CustomUser, username=username)
         expected_conf_code = f'{username}confirmcode'
-        if request.data['confirmation_code'] != expected_conf_code:
+        confirmation_code = request.data.get('confirmation_code', False)
+        if not confirmation_code:
+            return Response({
+                'confirmation_code': 'confirmation_code is empty'},
+                status=status.HTTP_400_BAD_REQUEST)
+        if confirmation_code != expected_conf_code:
             return Response({'confirmation_code': 'invalid confirmation code'},
                             status=status.HTTP_400_BAD_REQUEST)
         token = {'token': str(AccessToken.for_user(user))}

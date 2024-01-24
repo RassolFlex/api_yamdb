@@ -74,7 +74,7 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return f'{self.username}'
+        return self.username
 
 
 class Review(models.Model):

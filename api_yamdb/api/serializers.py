@@ -1,5 +1,5 @@
-from statistics import mean
 import re
+from statistics import mean
 
 from rest_framework import serializers
 
@@ -125,14 +125,6 @@ class SignupSerializer(serializers.ModelSerializer):
             'username',
             'email'
         )
-
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=CustomUser.objects.all(),
-        #         fields=('username', 'email'),
-        #         message='Email is invalid.'
-        #     )
-        # ]
 
     def validate_username(self, username):
         if username == 'me':
