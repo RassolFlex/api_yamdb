@@ -1,4 +1,5 @@
 from django.core.mail import send_mail
+from django.core.exceptions import BadRequest
 from django.core import exceptions
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets, permissions
@@ -10,7 +11,12 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
-from .permissions import AuthorOnly, IsAdminOrReadOnly, AdminOnly, ModeratorOnly
+from .permissions import (AuthorOnly,
+                          AuthorOrReadOnly,
+                          AdminOnly,
+                          IsAdminOrReadOnly,
+                          ModeratorOnly,
+                          PermissionForReviewsAndComments)
 from .serializers import (CommentSerializer,
                           ReviewSerializer,
                           TitleSerializerForRead,
@@ -200,18 +206,8 @@ class GetTokenViewSet(CustomCreateViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (PermissionForReviewsAndComments,)
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            permission_classes = [permissions.AllowAny]
-        elif self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action == 'partial_update' or self.action == 'destroy':
-            permission_classes = [AuthorOnly | ModeratorOnly | AdminOnly]
-        else:
-            permission_classes = [AdminOnly]
-        return [permission() for permission in permission_classes]
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -220,55 +216,61 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        if self.get_queryset().filter(author=self.request.user).first() is not None:
-            raise exceptions.BadRequest('err')
-        else:
-            serializer.save(author=self.request.user, title=self.get_title())
+        if (
+            self.get_queryset().filter(
+                author=self.request.user
+            ).first() is not None
+        ):
+            raise BadRequest('Review with this author to title already exist.')
+        serializer.save(author=self.request.user, title=self.get_title())
 
     def perform_update(self, serializer):
-        if self.request.user.role != 'user' or Review.objects.get(
-                pk=self.kwargs.get('pk')).author == self.request.user:
+        if (
+            self.request.user.role != 'user'
+            or Review.objects.get(pk=self.kwargs.get('pk')).author
+            == self.request.user
+        ):
             return super(ReviewViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Нельзя изменять чужой отзыв!')
+        raise PermissionDenied('Сant change someone review.')
 
     def perform_destroy(self, instance):
-        if self.request.user.role != 'user' or Review.objects.get(
-                pk=self.kwargs.get('pk')).author == self.request.user:
+        if (
+            self.request.user.role != 'user'
+            or Review.objects.get(pk=self.kwargs.get('pk')).author
+            == self.request.user
+        ):
             return super().perform_destroy(instance)
-        raise PermissionDenied('Нельзя изменять чужой отзыв!')
+        raise PermissionDenied('Сant delete someone review.')
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = (PermissionForReviewsAndComments,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == 'list' or self.action == 'retrieve':
-            permission_classes = [permissions.AllowAny]
-        elif self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action == 'partial_update' or self.action == 'destroy':
-            permission_classes = [AuthorOnly, AdminOnly, ModeratorOnly]
-        else:
-            permission_classes = [AdminOnly]
-        return [permission() for permission in permission_classes]
-
-    def get_object(self):
+    def get_review(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
     def get_queryset(self):
         return self.get_review().comments.all()
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     print(self.kwargs['title_id'])
-    #     print(self.kwargs['review_id'])
-    #     return super().retrieve(request, *args, **kwargs)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())
 
-    # def perform_create(self, serializer):
-    #     serializer = CommentSerializer(data=self.request.data)
-    #     if serializer.save(title_id=self.kwargs['title_id'], text=self.request['text'], score=self.request['score']):
-    #     # Comment.objects.get_or_create(title_id=self.kwargs['title_id'])
-    #         return Response(data=self.request.data, status=status.HTTP_201_CREATED)
+    def perform_update(self, serializer):
+        if (
+            self.request.user.role != 'user'
+            or Comment.objects.get(pk=self.kwargs.get('pk')).author
+            == self.request.user
+        ):
+            return super(CommentViewSet, self).perform_update(serializer)
+        raise PermissionDenied('Сant change someone review.')
+
+    def perform_destroy(self, instance):
+        if (
+            self.request.user.role != 'user'
+            or Comment.objects.get(pk=self.kwargs.get('pk')).author
+            == self.request.user
+        ):
+            return super().perform_destroy(instance)
+        raise PermissionDenied('Сant delete someone review.')
