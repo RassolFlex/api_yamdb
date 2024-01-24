@@ -1,21 +1,26 @@
 from django.core.mail import send_mail
 from django.core.exceptions import BadRequest
-from django.core import exceptions
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, status, viewsets, permissions
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
+from rest_framework import (filters,
+                            mixins,
+                            status,
+                            viewsets,
+                            permissions)
 
-from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
-from .permissions import (AuthorOnly,
-                          AuthorOrReadOnly,
-                          AdminOnly,
+from reviews.models import (Category,
+                            Comment,
+                            CustomUser,
+                            Genre,
+                            Review,
+                            Title)
+from .permissions import (AdminOnly,
                           IsAdminOrReadOnly,
-                          ModeratorOnly,
                           PermissionForReviewsAndComments)
 from .serializers import (CommentSerializer,
                           ReviewSerializer,
@@ -231,7 +236,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             == self.request.user
         ):
             return super(ReviewViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Сant change someone review.')
+        raise PermissionDenied('Cannot change someone\'s review.')
 
     def perform_destroy(self, instance):
         if (
@@ -240,7 +245,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             == self.request.user
         ):
             return super().perform_destroy(instance)
-        raise PermissionDenied('Сant delete someone review.')
+        raise PermissionDenied('Cannot delete someone\'s review.')
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -264,7 +269,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             == self.request.user
         ):
             return super(CommentViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Сant change someone review.')
+        raise PermissionDenied('Cannot change someone\'s review.')
 
     def perform_destroy(self, instance):
         if (
@@ -273,4 +278,4 @@ class CommentViewSet(viewsets.ModelViewSet):
             == self.request.user
         ):
             return super().perform_destroy(instance)
-        raise PermissionDenied('Сant delete someone review.')
+        raise PermissionDenied('Cannot delete someone\'s review.')

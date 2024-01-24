@@ -196,9 +196,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        # fields = ('id', 'text', 'author', 'score')
         read_only_fields = ('title', 'review', 'pub_date')
         model = Comment
-    
-    # def create(self, validated_data):
-    #     return super().create(validated_data)
