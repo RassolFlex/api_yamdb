@@ -157,6 +157,8 @@ class Test04TitleAPI:
         response = admin_client.get(
             f'{self.TITLES_URL}?genre={genres[1]["slug"]}'
         )
+        print('0---------------------0---------')
+        print(response.json())
         data = response.json()
         assert len(data['results']) == 2, (
             f'Проверьте, что для эндпоинта `{self.TITLES_URL}` реализована '
