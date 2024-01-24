@@ -107,9 +107,9 @@ class GenreViewSet(DestroyCreateListViewSet):
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         else:
-            self.permission_classes = [AdminOnly,]
+            self.permission_classes = [AdminOnly]
         return super(GenreViewSet, self).get_permissions()
 
 
@@ -143,7 +143,7 @@ class MeViewSet(mixins.RetrieveModelMixin,
                 mixins.UpdateModelMixin,
                 viewsets.GenericViewSet):
     serializer_class = UserMeSerializer
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return get_object_or_404(CustomUser,
