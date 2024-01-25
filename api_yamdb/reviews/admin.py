@@ -1,5 +1,7 @@
 from django.contrib import admin
 
-from .models import CustomUser
+from .models import Comment, CustomUser, Review
 
-admin.site.register(CustomUser)
+MODELS = [Comment, CustomUser, Review]
+
+admin.site.register(MODELS)
