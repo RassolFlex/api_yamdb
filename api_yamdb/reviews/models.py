@@ -79,9 +79,7 @@ class CustomUser(AbstractUser):
 
 class ReviewAndCommentBaseModel(models.Model):
     text = models.TextField('Текст отзыва')
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE  # related_name='reviews'
-    )
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     class Meta:
@@ -92,9 +90,7 @@ class ReviewAndCommentBaseModel(models.Model):
 class Review(ReviewAndCommentBaseModel):
     SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range 1 - 10.'
 
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews'
-    )
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
     score = models.SmallIntegerField(
         'Оценка',
         validators=[
@@ -103,8 +99,9 @@ class Review(ReviewAndCommentBaseModel):
         ])
 
     class Meta(ReviewAndCommentBaseModel.Meta):
-        verbose_name = "отзыв"
-        verbose_name_plural = "отзывы"
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'отзывы'
+        default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -117,13 +114,12 @@ class Review(ReviewAndCommentBaseModel):
 
 
 class Comment(ReviewAndCommentBaseModel):
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
-    )
+    review = models.ForeignKey(Review, on_delete=models.CASCADE)
 
     class Meta(ReviewAndCommentBaseModel.Meta):
-        verbose_name = "комментарий"
-        verbose_name_plural = "комментарии"
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
+        default_related_name = 'comments'
 
     def __str__(self):
         return self.text
