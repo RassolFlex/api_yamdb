@@ -34,25 +34,37 @@ from .serializers import (CommentSerializer,
                           UserMeSerializer)
 
 
+# class DestroyCreateListViewSet(mixins.ListModelMixin,
+#                                mixins.DestroyModelMixin,
+#                                mixins.CreateModelMixin,
+#                                mixins.UpdateModelMixin, - без этого не работает
+#                                viewsets.GenericViewSet):
+#     lookup_field = 'slug'
+#     pagination_class = PageNumberPagination
+#     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+#     filterset_fields = ('name',)
+#     search_fields = ('name',)
+#     permission_classes = [IsAdminOrReadOnly]
+#
+#     def perform_create(self, serializer): - без этого тоже
+#         if self.request.user.role != 'admin':
+#             raise PermissionDenied('')
+#         serializer.save()
+#
+#     def perform_update(self, serializer): - и без этого
+#         raise MethodNotAllowed(method='patch')
+
+
 class DestroyCreateListViewSet(mixins.ListModelMixin,
                                mixins.DestroyModelMixin,
                                mixins.CreateModelMixin,
-                               mixins.UpdateModelMixin,
                                viewsets.GenericViewSet):
     lookup_field = 'slug'
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('name',)
     search_fields = ('name',)
-    permission_classes = [IsAdminOrReadOnly]
-
-    def perform_create(self, serializer):
-        if self.request.user.role != 'admin':
-            raise PermissionDenied('')
-        serializer.save()
-
-    def perform_update(self, serializer):
-        raise MethodNotAllowed(method='patch')
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CustomCreateViewSet(mixins.CreateModelMixin,
@@ -64,12 +76,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
-    lookup_field = 'id'
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('genre', 'category', 'year',)
     filterset_fields = ('genre', 'category', 'year',)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
-        if self.request.method == 'POST' or self.request.method == 'PATCH':
+        if self.request.method not in permissions.SAFE_METHODS:
             return TitleSerializerForWrite
         return TitleSerializerForRead
 

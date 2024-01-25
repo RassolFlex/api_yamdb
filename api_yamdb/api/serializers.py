@@ -10,6 +10,8 @@ from reviews.models import (Category,
                             Comment,
                             Review)
 
+DEFAULT_RATING = 0
+
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,7 +29,9 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
+        allow_null=False,
+        allow_empty=False
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -49,7 +53,7 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
 class TitleSerializerForRead(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(default=DEFAULT_RATING)
 
     class Meta:
         model = Title
@@ -62,13 +66,6 @@ class TitleSerializerForRead(serializers.ModelSerializer):
             'genre',
             'category',
         )
-
-    def get_rating(self, obj):
-        reviews = Title.objects.get(id=obj.id).reviews
-        scores = [score['score'] for score in reviews.values('score')]
-        if len(scores) == 0:
-            return None
-        return int(mean(scores))
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
