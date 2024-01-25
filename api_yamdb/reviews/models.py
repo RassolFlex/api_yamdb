@@ -110,7 +110,7 @@ class Review(ReviewAndCommentBaseModel):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:41]
 
 
 class Comment(ReviewAndCommentBaseModel):
@@ -122,7 +122,7 @@ class Comment(ReviewAndCommentBaseModel):
         default_related_name = 'comments'
 
     def __str__(self):
-        return self.text
+        return self.text[:41]
 
 
 class GenreTitle(models.Model):
