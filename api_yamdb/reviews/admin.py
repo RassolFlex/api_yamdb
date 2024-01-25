@@ -1,5 +1,40 @@
 from django.contrib import admin
 
-from .models import CustomUser
+from .models import CustomUser, Title, Category, Genre
 
 admin.site.register(CustomUser)
+
+@admin.register(Title)
+class TitleAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'author',
+        'year',
+        'description',
+        'genre',
+        'category',
+    ]
+    list_editable = [
+        'name',
+        'author',
+        'year',
+        'description',
+        'genre',
+        'category',
+    ]
+    list_filter = [
+        'author',
+        'year',
+        'genre',
+        'category',
+    ]
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    pass
