@@ -11,15 +11,12 @@ class TitleAdmin(admin.ModelAdmin):
         'author',
         'year',
         'description',
-        'genre',
         'category',
     ]
     list_editable = [
-        'name',
         'author',
         'year',
         'description',
-        'genre',
         'category',
     ]
     list_filter = [

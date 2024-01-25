@@ -7,7 +7,6 @@ from reviews.models import (Category,
                             CustomUser,
                             Genre,
                             Title,
-                            GenreTitle,
                             Comment,
                             Review)
 
@@ -34,7 +33,6 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Category.objects.all()
     )
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -42,28 +40,10 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'description',
             'genre',
             'category',
         )
-
-    def create(self, validated_data):
-        genre_data = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genre_data:
-            current_genre, status = Genre.objects.get_or_create(
-                slug=genre
-            )
-            GenreTitle.objects.create(genre=current_genre, title=title)
-        return title
-
-    def get_rating(self, obj):
-        reviews = Title.objects.get(id=obj.id).reviews
-        scores = [score['score'] for score in reviews.values('score')]
-        if len(scores) == 0:
-            return None
-        return int(mean(scores))
 
 
 class TitleSerializerForRead(serializers.ModelSerializer):
