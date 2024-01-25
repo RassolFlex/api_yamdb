@@ -85,6 +85,7 @@ class ReviewAndCommentBaseModel(models.Model):
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     class Meta:
+        ordering = ['-pub_date']
         abstract = True
 
 
@@ -101,7 +102,9 @@ class Review(ReviewAndCommentBaseModel):
             MinValueValidator(1, SCORE_VALIDATOR_ERROR_MESSAGE)
         ])
 
-    class Meta:
+    class Meta(ReviewAndCommentBaseModel.Meta):
+        verbose_name = "отзыв"
+        verbose_name_plural = "отзывы"
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -117,6 +120,10 @@ class Comment(ReviewAndCommentBaseModel):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
+
+    class Meta(ReviewAndCommentBaseModel.Meta):
+        verbose_name = "комментарий"
+        verbose_name_plural = "комментарии"
 
     def __str__(self):
         return self.text
