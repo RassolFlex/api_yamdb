@@ -77,20 +77,29 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Review(models.Model):
+class ReviewAndCommentBaseModel(models.Model):
+    text = models.TextField('Текст отзыва')
+    author = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE  # related_name='reviews'
+    )
+    pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class Review(ReviewAndCommentBaseModel):
+    SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range 1 - 10.'
+
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews'
     )
-    text = models.TextField()
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='reviews'
-    )
-    score = models.IntegerField(
+    score = models.SmallIntegerField(
+        'Оценка',
         validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(10, SCORE_VALIDATOR_ERROR_MESSAGE),
+            MinValueValidator(1, SCORE_VALIDATOR_ERROR_MESSAGE)
         ])
-    pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     class Meta:
         constraints = [
@@ -104,15 +113,10 @@ class Review(models.Model):
         return self.text
 
 
-class Comment(models.Model):
+class Comment(ReviewAndCommentBaseModel):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
-    text = models.TextField()
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='comments'
-    )
-    pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     def __str__(self):
         return self.text
