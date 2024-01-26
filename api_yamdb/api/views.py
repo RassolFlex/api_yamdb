@@ -32,6 +32,7 @@ from .serializers import (CommentSerializer,
                           SignupSerializer,
                           CustomUserTokenSerializer,
                           UserMeSerializer)
+from .filters import TitleSearchFilter
 
 
 # class DestroyCreateListViewSet(mixins.ListModelMixin,
@@ -77,6 +78,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filterset_class = TitleSearchFilter
     ordering_fields = ('genre', 'category', 'year',)
     filterset_fields = ('genre', 'category', 'year',)
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -86,44 +88,30 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleSerializerForWrite
         return TitleSerializerForRead
 
-    def filter_queryset(self, queryset):
-        if self.request.query_params:
-            filters = {}
-            for key, value in self.request.query_params.items():
-                if key == 'category' or key == 'genre':
-                    filters[f'{key}__slug'] = value
-                    continue
-                filters[key] = value
-            try:
-                return queryset.filter(**filters)
-            except ValueError:
-                return super().filter_queryset(queryset)
-        return super().filter_queryset(queryset)
-
-    def perform_create(self, serializer):
-        if self.request.user.role != 'admin':
-            raise PermissionDenied('')
-        serializer.save()
-
-    def perform_update(self, serializer):
-        if self.request.method == 'PUT':
-            raise MethodNotAllowed(method='put')
-        if self.request.user.role != 'admin':
-            raise MethodNotAllowed(method='patch')
-        serializer.save()
+    # def perform_create(self, serializer):
+    #     if self.request.user.role != 'admin':
+    #         raise PermissionDenied('')
+    #     serializer.save()
+    #
+    # def perform_update(self, serializer):
+    #     if self.request.method == 'PUT':
+    #         raise MethodNotAllowed(method='put')
+    #     if self.request.user.role != 'admin':
+    #         raise MethodNotAllowed(method='patch')
+    #     serializer.save()
 
 
 class GenreViewSet(DestroyCreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    http_method_names = ['get', 'post', 'delete']
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-        else:
-            self.permission_classes = [AdminOnly]
-        return super(GenreViewSet, self).get_permissions()
+    # http_method_names = ['get', 'post', 'delete']
+    #
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    #     else:
+    #         self.permission_classes = [AdminOnly]
+    #     return super(GenreViewSet, self).get_permissions()
 
 
 class CategoryViewSet(DestroyCreateListViewSet):
