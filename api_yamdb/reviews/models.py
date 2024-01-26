@@ -6,7 +6,7 @@ from django.db import models
 class Title(models.Model):
     name = models.CharField(max_length=28)
     author = models.ForeignKey(
-        'CustomUser',
+        'ApiUser',
         on_delete=models.SET_NULL,
         null=True
     )
@@ -45,12 +45,16 @@ class Category(models.Model):
         return self.slug
 
 
-class CustomUser(AbstractUser):
-    ROLES = (
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
-    )
+class ApiUser(AbstractUser):
+
+    class UserRoles(models.TextChoices):
+        USER = 'user', 'Пользователь'
+        MODERATOR = 'moderator', 'Модератор'
+        ADMIN = 'admin', 'Администратор'
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     username = models.CharField(
         'Логин', max_length=150, unique=True
     )
@@ -61,7 +65,10 @@ class CustomUser(AbstractUser):
         'Фамилия', max_length=150, null=True, blank=True
     )
     role = models.CharField(
-        'Роль', max_length=30, choices=ROLES, default='user'
+        'Роль',
+        max_length=30,
+        choices=UserRoles.choices,
+        default=UserRoles.USER,
     )
     email = models.EmailField(
         'email address', max_length=254, unique=True
@@ -70,8 +77,9 @@ class CustomUser(AbstractUser):
         'Информация', null=True, blank=True
     )
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    class Meta():
+        verbose_name = 'пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.username
@@ -83,7 +91,7 @@ class Review(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='reviews'
+        ApiUser, on_delete=models.CASCADE, related_name='reviews'
     )
     score = models.IntegerField(
         validators=[
@@ -110,7 +118,7 @@ class Comment(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='comments'
+        ApiUser, on_delete=models.CASCADE, related_name='comments'
     )
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 

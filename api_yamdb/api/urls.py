@@ -5,7 +5,7 @@ from .views import (GetTokenViewSet,
                     TitleViewSet,
                     GenreViewSet,
                     CategoryViewSet,
-                    CustomUserViewSet,
+                    ApiUserViewSet,
                     SignupViewSet,
                     MeViewSet,
                     CommentViewSet,
@@ -24,7 +24,7 @@ router_v1.register(
     CommentViewSet,
     basename='comment'
 )
-router_v1.register(r'users', CustomUserViewSet)
+router_v1.register(r'users', ApiUserViewSet)
 
 urlpatterns = [
     path('v1/users/me/', MeViewSet.as_view({

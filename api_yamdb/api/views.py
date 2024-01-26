@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (Category,
                             Comment,
-                            CustomUser,
+                            ApiUser,
                             Genre,
                             Review,
                             Title)
@@ -28,10 +28,10 @@ from .serializers import (CommentSerializer,
                           TitleSerializerForWrite,
                           GenreSerializer,
                           CategorySerializer,
-                          CustomUserSerializer,
+                          ApiUserSerializer,
                           SignupSerializer,
-                          CustomUserTokenSerializer,
-                          UserMeSerializer)
+                          ApiUserTokenSerializer,
+                          UserDetailSerializer)
 
 
 class DestroyCreateListViewSet(mixins.ListModelMixin,
@@ -55,8 +55,8 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
         raise MethodNotAllowed(method='patch')
 
 
-class CustomCreateViewSet(mixins.CreateModelMixin,
-                          viewsets.GenericViewSet):
+class ApiCreateViewSet(mixins.CreateModelMixin,
+                       viewsets.GenericViewSet):
     pass
 
 
@@ -118,9 +118,9 @@ class CategoryViewSet(DestroyCreateListViewSet):
     serializer_class = CategorySerializer
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+class ApiUserViewSet(viewsets.ModelViewSet):
+    queryset = ApiUser.objects.all()
+    serializer_class = ApiUserSerializer
     lookup_field = 'username'
     filter_backends = (filters.OrderingFilter, filters.SearchFilter)
     search_fields = ('username',)
@@ -130,10 +130,10 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def create(self, request, *args, **kwargs):
-        serializer = CustomUserSerializer(data=request.data)
+        serializer = ApiUserSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        CustomUser.objects.get_or_create(
+        ApiUser.objects.get_or_create(
             username=request.data['username'], email=request.data['email']
         )
         return Response(data=request.data, status=status.HTTP_201_CREATED)
@@ -142,22 +142,22 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 class MeViewSet(mixins.RetrieveModelMixin,
                 mixins.UpdateModelMixin,
                 viewsets.GenericViewSet):
-    serializer_class = UserMeSerializer
+    serializer_class = UserDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return get_object_or_404(CustomUser,
+        return get_object_or_404(ApiUser,
                                  username=self.request.user.username)
 
 
-class SignupViewSet(CustomCreateViewSet):
-    queryset = CustomUser.objects.all()
+class SignupViewSet(ApiCreateViewSet):
+    queryset = ApiUser.objects.all()
     serializer_class = SignupSerializer
 
     def create(self, request):
-        if CustomUser.objects.filter(
+        if ApiUser.objects.filter(
                 username=request.data.get('username')).first() is not None:
-            user = CustomUser.objects.filter(
+            user = ApiUser.objects.filter(
                 username=request.data.get('username')).first()
             email = request.data['email']
             if user.email != email:
@@ -176,7 +176,7 @@ class SignupViewSet(CustomCreateViewSet):
         serializer.is_valid(raise_exception=True)
         email = request.data['email']
         username = request.data['username']
-        user = CustomUser.objects.get_or_create(username=username, email=email)
+        user = ApiUser.objects.get_or_create(username=username, email=email)
         send_mail(
             subject='confirmation_code',
             message=f'Your confirm code: "{username}confirmcode"',
@@ -187,19 +187,19 @@ class SignupViewSet(CustomCreateViewSet):
         return Response(data=request.data, status=status.HTTP_200_OK)
 
 
-class GetTokenViewSet(CustomCreateViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserTokenSerializer
+class GetTokenViewSet(ApiCreateViewSet):
+    queryset = ApiUser.objects.all()
+    serializer_class = ApiUserTokenSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = CustomUserTokenSerializer(data=request.data)
+        serializer = ApiUserTokenSerializer(data=request.data)
         serializer.is_valid()
         username = request.data.get('username', False)
         if not username:
             return Response({'username': 'username is empty'},
                             status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(
-            CustomUser, username=username)
+            ApiUser, username=username)
         expected_conf_code = f'{username}confirmcode'
         confirmation_code = request.data.get('confirmation_code', False)
         if not confirmation_code:
