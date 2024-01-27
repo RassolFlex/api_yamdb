@@ -1,4 +1,5 @@
 from django.core.exceptions import BadRequest
+from django.db.models import Avg
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -74,7 +75,7 @@ class CustomCreateViewSet(mixins.CreateModelMixin,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(score=Avg('reviews__score'))
     serializer_class = TitleSerializerForWrite
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)

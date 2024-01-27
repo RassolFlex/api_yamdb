@@ -49,6 +49,13 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
             'category',
         )
 
+    def to_representation(self, instance):
+        serialized_data = super(TitleSerializerForWrite, self).to_representation(instance)
+        serialized_data['rating'] = DEFAULT_RATING
+        serialized_data.update({'category': CategorySerializer(instance.category, read_only=True).data})
+        serialized_data.update({'genre': GenreSerializer(instance.genre, read_only=True, many=True).data})
+        return serialized_data
+
 
 class TitleSerializerForRead(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
