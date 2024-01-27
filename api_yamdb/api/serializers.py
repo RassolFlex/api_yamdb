@@ -175,6 +175,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
+    score = serializers.IntegerField(max_value=10, min_value=1)
 
     def validate(self, attrs):
         request = self.context['request']
