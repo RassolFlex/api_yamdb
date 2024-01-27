@@ -1,4 +1,3 @@
-from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -225,31 +224,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        if (
-            self.get_queryset().filter(
-                author=self.request.user
-            ).first() is not None
-        ):
-            raise BadRequest('Review with this author to title already exist.')
         serializer.save(author=self.request.user, title=self.get_title())
-
-    def perform_update(self, serializer):
-        if (
-            self.request.user.role != 'user'
-            or Review.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super(ReviewViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Cannot change someone\'s review.')
-
-    def perform_destroy(self, instance):
-        if (
-            self.request.user.role != 'user'
-            or Review.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super().perform_destroy(instance)
-        raise PermissionDenied('Cannot delete someone\'s review.')
 
 
 class CommentViewSet(viewsets.ModelViewSet):
