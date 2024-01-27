@@ -13,7 +13,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (Category,
-                            Comment,
                             CustomUser,
                             Genre,
                             Review,
@@ -233,28 +232,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-    def perform_update(self, serializer):
-        if (
-            self.request.user.role != 'user'
-            or Comment.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super(CommentViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Cannot change someone\'s review.')
-
-    def perform_destroy(self, instance):
-        if (
-            self.request.user.role != 'user'
-            or Comment.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super().perform_destroy(instance)
-        raise PermissionDenied('Cannot delete someone\'s review.')
