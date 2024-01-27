@@ -1,6 +1,9 @@
+import re
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from rest_framework import serializers
 
 
 class Title(models.Model):
@@ -80,6 +83,27 @@ class ApiUser(AbstractUser):
     class Meta():
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def check_username(username):
+        if not username:
+            raise serializers.ValidationError('Username must be not empty.')
+        if len(username) > 150:
+            raise serializers.ValidationError('Username over 150 length.')
+        if username == 'me':
+            raise serializers.ValidationError(
+                'Username should not be equal "me".')
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, username):
+            raise serializers.ValidationError('Invalid username.')
+        return username
+
+    @property
+    def is_admin(self):
+        return self.role == 'admin' or self.is_superuser or self.is_staff
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
 
     def __str__(self):
         return self.username

@@ -1,4 +1,3 @@
-import re
 from statistics import mean
 
 from rest_framework import serializers
@@ -93,17 +92,7 @@ class TitleSerializerForRead(serializers.ModelSerializer):
 
 class ValidateUsernameMixin:
     def validate_username(self, username):
-        if not username:
-            raise serializers.ValidationError('Username must be not empty.')
-        if len(username) > 150:
-            raise serializers.ValidationError('Username over 150 length.')
-        if username == 'me':
-            raise serializers.ValidationError(
-                'Username should not be equal "me".')
-        pattern = r'^[\w.@+-]+\Z'
-        if not re.match(pattern, username):
-            raise serializers.ValidationError('Invalid username.')
-        return username
+        return ApiUser.check_username(username)
 
 
 class ApiUserSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
