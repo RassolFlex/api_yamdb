@@ -1,48 +1,76 @@
+import datetime
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
+NAME_SLICE_START = 0
+NAME_SLICE_END = 19
+
+
+class GenreCategoryModel(models.Model):
+    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
+    slug = models.SlugField(unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг')
+
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.slug
+
 
 class Title(models.Model):
-    name = models.CharField(max_length=28)
+    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
     author = models.ForeignKey(
         'CustomUser',
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        verbose_name='Автор'
     )
-    year = models.IntegerField()
-    description = models.TextField(null=True)
-    genre = models.ManyToManyField('Genre', through='GenreTitle')
+    year = models.SmallIntegerField(
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(datetime.date.today().year)
+        ],
+        verbose_name='Год'
+    )
+    description = models.TextField(null=True, verbose_name='Описание')
+    genre = models.ManyToManyField(
+        'Genre',
+        verbose_name='Жанр'
+    )
     category = models.ForeignKey(
         'Category',
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='titles',
+        verbose_name='Категория'
     )
 
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
-
     class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
+    def __str__(self):
+        return self.name[NAME_SLICE_START:NAME_SLICE_END]
+
+
+class Genre(GenreCategoryModel):
+
+    class Meta(GenreCategoryModel.Meta):
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
-    def __str__(self):
-        return self.slug
 
+class Category(GenreCategoryModel):
 
-class Category(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
-
-    class Meta:
+    class Meta(GenreCategoryModel.Meta):
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
         ordering = ('name',)
-
-    def __str__(self):
-        return self.slug
 
 
 class CustomUser(AbstractUser):
@@ -135,8 +163,3 @@ class Comment(ReviewAndCommentBaseModel):
 
     def __str__(self):
         return self.text[:41]
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
