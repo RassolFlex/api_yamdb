@@ -1,9 +1,9 @@
-import pandas
 import json
-
-from django.core.management.base import BaseCommand
-from pathlib import Path
 from os import listdir
+from pathlib import Path
+
+import pandas
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

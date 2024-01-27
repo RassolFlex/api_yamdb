@@ -1,6 +1,4 @@
-from django.core.exceptions import BadRequest
 from django.db.models import Avg
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (filters,
@@ -12,10 +10,11 @@ from rest_framework.exceptions import PermissionDenied, MethodNotAllowed
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action
+from rest_framework.generics import CreateAPIView
 
 from reviews.models import (Category,
-                            CustomUser,
+                            ApiUser,
                             Genre,
                             Review,
                             Title)
@@ -28,17 +27,17 @@ from .serializers import (CommentSerializer,
                           TitleSerializerForWrite,
                           GenreSerializer,
                           CategorySerializer,
-                          CustomUserSerializer,
+                          ApiUserSerializer,
                           SignupSerializer,
-                          CustomUserTokenSerializer,
-                          UserMeSerializer)
+                          ApiUserTokenSerializer,
+                          UserDetailSerializer)
 from .filters import TitleSearchFilter
 
 
 # class DestroyCreateListViewSet(mixins.ListModelMixin,
 #                                mixins.DestroyModelMixin,
 #                                mixins.CreateModelMixin,
-#                                mixins.UpdateModelMixin, - без этого не работает
+#                                mixins.UpdateModelMixin,-без этого не работает
 #                                viewsets.GenericViewSet):
 #     lookup_field = 'slug'
 #     pagination_class = PageNumberPagination
@@ -65,12 +64,15 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('name',)
     search_fields = ('name',)
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = [IsAdminOrReadOnly]
 
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            raise PermissionDenied('')
+        serializer.save()
 
-class CustomCreateViewSet(mixins.CreateModelMixin,
-                          viewsets.GenericViewSet):
-    pass
+    def perform_update(self, serializer):
+        raise MethodNotAllowed(method='patch')
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -119,99 +121,60 @@ class CategoryViewSet(DestroyCreateListViewSet):
     serializer_class = CategorySerializer
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+class ApiUserViewSet(viewsets.ModelViewSet):
+    queryset = ApiUser.objects.all()
+    serializer_class = ApiUserSerializer
     lookup_field = 'username'
     filter_backends = (filters.OrderingFilter, filters.SearchFilter)
     search_fields = ('username',)
-    ordering_fields = '__all__'
+    ordering_fields = ('username',)
     pagination_class = LimitOffsetPagination
     permission_classes = [AdminOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def create(self, request, *args, **kwargs):
-        serializer = CustomUserSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        CustomUser.objects.get_or_create(
-            username=request.data['username'], email=request.data['email']
-        )
-        return Response(data=request.data, status=status.HTTP_201_CREATED)
+    @action(methods=['GET', 'PATCH'],
+            detail=False,
+            permission_classes=(permissions.IsAuthenticated,),
+            url_path='me')
+    def get_detail_user(self, request):
+        serializer = ApiUserSerializer(request.user)
+        if request.method == 'PATCH':
+            if request.user.role == 'user':
+                serializer = UserDetailSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True
+                )
+            else:
+                serializer = ApiUserSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True
+                )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(data=serializer.data)
 
 
-class MeViewSet(mixins.RetrieveModelMixin,
-                mixins.UpdateModelMixin,
-                viewsets.GenericViewSet):
-    serializer_class = UserMeSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return get_object_or_404(CustomUser,
-                                 username=self.request.user.username)
-
-
-class SignupViewSet(CustomCreateViewSet):
-    queryset = CustomUser.objects.all()
+class SignupAPIView(CreateAPIView):
     serializer_class = SignupSerializer
 
-    def create(self, request):
-        if CustomUser.objects.filter(
-                username=request.data.get('username')).first() is not None:
-            user = CustomUser.objects.filter(
-                username=request.data.get('username')).first()
-            email = request.data['email']
-            if user.email != email:
-                return Response({'email': 'invalid email'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            username = request.data['username']
-            send_mail(
-                subject='confirmation_code',
-                message=f'Your confirm code: "{username}confirmcode"',
-                from_email='yamdb@yamdb.api',
-                recipient_list=[email],
-                fail_silently=True,
-            )
-            return Response(data=request.data, status=status.HTTP_200_OK)
+    def create(self, request, *args, **kwargs):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = request.data['email']
-        username = request.data['username']
-        user = CustomUser.objects.get_or_create(username=username, email=email)
-        send_mail(
-            subject='confirmation_code',
-            message=f'Your confirm code: "{username}confirmcode"',
-            from_email='yamdb@yamdb.api',
-            recipient_list=[email],
-            fail_silently=True,
-        )
-        return Response(data=request.data, status=status.HTTP_200_OK)
+        serializer.save()
+        return Response(data=request.data)
 
 
-class GetTokenViewSet(CustomCreateViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserTokenSerializer
+class GetTokenAPIView(CreateAPIView):
+    serializer_class = ApiUserTokenSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = CustomUserTokenSerializer(data=request.data)
-        serializer.is_valid()
-        username = request.data.get('username', False)
-        if not username:
-            return Response({'username': 'username is empty'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        user = get_object_or_404(
-            CustomUser, username=username)
-        expected_conf_code = f'{username}confirmcode'
-        confirmation_code = request.data.get('confirmation_code', False)
-        if not confirmation_code:
-            return Response({
-                'confirmation_code': 'confirmation_code is empty'},
-                status=status.HTTP_400_BAD_REQUEST)
-        if confirmation_code != expected_conf_code:
-            return Response({'confirmation_code': 'invalid confirmation code'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        token = {'token': str(AccessToken.for_user(user))}
-        return Response(token, status=status.HTTP_200_OK)
+        serializer = ApiUserTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(data=request.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

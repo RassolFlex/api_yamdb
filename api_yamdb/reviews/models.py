@@ -1,18 +1,23 @@
 import datetime
+import re
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from rest_framework import serializers
 
-NAME_MAX_LENGTH = 256
-SLUG_MAX_LENGTH = 50
-NAME_SLICE_START = 0
-NAME_SLICE_END = 19
+from .constants import (LENGTH_FOR_FIELD,
+                        LENGTH_FOR_FIELD_EMAIL,
+                        LENGTH_FOR_FIELD_NAME,
+                        LENGTH_FOR_FIELD_SLUG,
+                        SLICE)
 
 
 class GenreCategoryModel(models.Model):
-    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
-    slug = models.SlugField(unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг')
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME,
+                            verbose_name='Название')
+    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG,
+                            verbose_name='Слаг')
 
     class Meta:
         abstract = True
@@ -23,9 +28,9 @@ class GenreCategoryModel(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
     author = models.ForeignKey(
-        'CustomUser',
+        'ApiUser',
         on_delete=models.SET_NULL,
         null=True,
         verbose_name='Автор'
@@ -54,7 +59,7 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
-        return self.name[NAME_SLICE_START:NAME_SLICE_END]
+        return self.name[:SLICE]
 
 
 class Genre(GenreCategoryModel):
@@ -73,42 +78,71 @@ class Category(GenreCategoryModel):
         ordering = ('name',)
 
 
-class CustomUser(AbstractUser):
-    ROLES = (
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
-    )
+class ApiUser(AbstractUser):
+
+    class UserRoles(models.TextChoices):
+        USER = 'user', 'Пользователь'
+        MODERATOR = 'moderator', 'Модератор'
+        ADMIN = 'admin', 'Администратор'
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     username = models.CharField(
-        'Логин', max_length=150, unique=True
+        'Логин', max_length=LENGTH_FOR_FIELD, unique=True
     )
     first_name = models.CharField(
-        'Имя', max_length=150, null=True, blank=True
+        'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True
     )
     last_name = models.CharField(
-        'Фамилия', max_length=150, null=True, blank=True
+        'Фамилия', max_length=LENGTH_FOR_FIELD, null=True, blank=True
     )
     role = models.CharField(
-        'Роль', max_length=30, choices=ROLES, default='user'
+        'Роль',
+        max_length=max((len(role[0]) for role in UserRoles.choices)),
+        choices=UserRoles.choices,
+        default=UserRoles.USER,
     )
     email = models.EmailField(
-        'email address', max_length=254, unique=True
+        'email address', max_length=LENGTH_FOR_FIELD_EMAIL, unique=True
     )
     bio = models.TextField(
         'Информация', null=True, blank=True
     )
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    class Meta():
+        verbose_name = 'пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def check_username(username):
+        if not username:
+            raise serializers.ValidationError('Username must be not empty.')
+        if len(username) > LENGTH_FOR_FIELD:
+            raise serializers.ValidationError('Username over 150 length.')
+        if username == 'me':
+            raise serializers.ValidationError(
+                'Username should not be equal "me".')
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, username):
+            raise serializers.ValidationError('Invalid username.')
+        return username
+
+    @property
+    def is_admin(self):
+        return self.role == 'admin' or self.is_superuser or self.is_staff
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
 
     def __str__(self):
-        return self.username
+        return self.username[:SLICE]
 
 
 class ReviewAndCommentBaseModel(models.Model):
     text = models.TextField('Текст отзыва')
     author = models.ForeignKey(
-        CustomUser,
+        ApiUser,
         on_delete=models.CASCADE,
         verbose_name='Автор'
     )
@@ -146,7 +180,7 @@ class Review(ReviewAndCommentBaseModel):
         ]
 
     def __str__(self):
-        return self.text[:41]
+        return self.text[:SLICE]
 
 
 class Comment(ReviewAndCommentBaseModel):
@@ -162,4 +196,4 @@ class Comment(ReviewAndCommentBaseModel):
         default_related_name = 'comments'
 
     def __str__(self):
-        return self.text[:41]
+        return self.text[:SLICE]

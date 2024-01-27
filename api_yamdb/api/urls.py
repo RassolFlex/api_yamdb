@@ -1,13 +1,12 @@
 from rest_framework import routers
 from django.urls import include, path
 
-from .views import (GetTokenViewSet,
-                    TitleViewSet,
+from .views import (TitleViewSet,
                     GenreViewSet,
                     CategoryViewSet,
-                    CustomUserViewSet,
-                    SignupViewSet,
-                    MeViewSet,
+                    ApiUserViewSet,
+                    SignupAPIView,
+                    GetTokenAPIView,
                     CommentViewSet,
                     ReviewViewSet)
 
@@ -24,16 +23,14 @@ router_v1.register(
     CommentViewSet,
     basename='comment'
 )
-router_v1.register(r'users', CustomUserViewSet)
+router_v1.register(r'users', ApiUserViewSet, basename='users')
+
+auth_patterns = [
+    path('signup/', SignupAPIView.as_view(), name='signup'),
+    path('token/', GetTokenAPIView.as_view(), name='get_token'),
+]
 
 urlpatterns = [
-    path('v1/users/me/', MeViewSet.as_view({
-        'get': 'retrieve',
-        'patch': 'partial_update'
-    }), name='me'),
+    path('v1/auth/', include(auth_patterns)),
     path('v1/', include(router_v1.urls)),
-    path('v1/auth/signup/',
-         SignupViewSet.as_view({'post': 'create'}), name='signup'),
-    path('v1/auth/token/', GetTokenViewSet.as_view({'post': 'create'}),
-         name='get_token'),
 ]
