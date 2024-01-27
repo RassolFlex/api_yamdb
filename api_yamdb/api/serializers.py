@@ -1,3 +1,4 @@
+from django.core.exceptions import BadRequest
 import re
 from statistics import mean
 
@@ -174,9 +175,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
+    score = serializers.IntegerField(max_value=10, min_value=1)
+
+    def validate(self, attrs):
+        request = self.context['request']
+        if self.context['request'].method == 'POST':
+            title = self.context['view'].get_title()
+            if title.reviews.filter(author=request.user).exists():
+                raise BadRequest(
+                    'Review with this author to title already exist.'
+                )
+        return super().validate(attrs)
 
     class Meta:
-        fields = '__all__'
+        fields = ('title', 'author', 'id', 'text', 'score', 'pub_date')
         read_only_fields = ('title',)
         model = Review
 
@@ -187,6 +199,6 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ('review', 'author', 'id', 'text', 'pub_date')
         read_only_fields = ('title', 'review', 'pub_date')
         model = Comment
