@@ -6,7 +6,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.constants import (LENGTH_FOR_FIELD,
-                               LENGTH_FOR_FIELD_EMAIL)
+                               LENGTH_FOR_FIELD_EMAIL,
+                               MIN_SCORE_VALUE,
+                               MAX_SCORE_VALUE)
 from reviews.models import (Category,
                             ApiUser,
                             Genre,
@@ -188,16 +190,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
-    score = serializers.IntegerField(max_value=10, min_value=1)
+    score = serializers.IntegerField(
+        max_value=MAX_SCORE_VALUE, min_value=MIN_SCORE_VALUE
+    )
 
     def validate(self, attrs):
         request = self.context['request']
-        if self.context['request'].method == 'POST':
-            title = self.context['view'].get_title()
-            if title.reviews.filter(author=request.user).exists():
-                raise BadRequest(
-                    'Review with this author to title already exist.'
-                )
+        if (
+            request.method == 'POST'
+            and self.context['view'].get_title().reviews.filter(
+                author=request.user
+            ).exists()
+        ):
+            raise BadRequest(
+                'Review with this author to title already exist.'
+            )
         return super().validate(attrs)
 
     class Meta:
