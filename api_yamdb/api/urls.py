@@ -6,8 +6,9 @@ from .views import (GetTokenViewSet,
                     GenreViewSet,
                     CategoryViewSet,
                     ApiUserViewSet,
-                    SignupViewSet,
-                    MeViewSet,
+                    SignupAPIView,
+                    # SignupViewSet,
+                    # MeViewSet,
                     CommentViewSet,
                     ReviewViewSet)
 
@@ -27,16 +28,13 @@ router_v1.register(
 router_v1.register(r'users', ApiUserViewSet, basename='users')
 
 auth_patterns = [
-    path('signup/', SignupViewSet.as_view({'post': 'create'}), name='signup'),
+    # path('signup/', SignupViewSet.as_view({'post': 'create'}), name='signup'),
+    path('signup/', SignupAPIView.as_view(), name='signup'),
     path('token/', GetTokenViewSet.as_view({'post': 'create'}),
          name='get_token'),
 ]
 
 urlpatterns = [
-    path('v1/users/me/', MeViewSet.as_view({
-        'get': 'retrieve',
-        'patch': 'partial_update'
-    }), name='me'),
-    path('v1/', include(router_v1.urls)),
     path('v1/auth/', include(auth_patterns)),
+    path('v1/', include(router_v1.urls)),
 ]

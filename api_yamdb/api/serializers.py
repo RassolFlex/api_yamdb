@@ -1,7 +1,13 @@
 from statistics import mean
 
+from django.core.exceptions import BadRequest
 from rest_framework import serializers
+from django.core.mail import send_mail
+from rest_framework.response import Response
+from rest_framework import status
 
+from reviews.constants import (LENGTH_FOR_FIELD,
+                               LENGTH_FOR_FIELD_EMAIL)
 from reviews.models import (Category,
                             ApiUser,
                             Genre,
@@ -109,7 +115,14 @@ class ApiUserSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
         )
 
 
-class SignupSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
+class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
+
+    username = serializers.CharField(
+        max_length=LENGTH_FOR_FIELD, required=True
+    )
+    email = serializers.EmailField(
+        max_length=LENGTH_FOR_FIELD_EMAIL, required=True
+    )
 
     class Meta:
         model = ApiUser
@@ -118,8 +131,70 @@ class SignupSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
             'email'
         )
 
+    def validate(self, data):
+        username = data['username']
+        if ApiUser.objects.filter(
+                email=data.get('email')).first() is not None:
+            user = ApiUser.objects.filter(
+                email=data.get('email')).first()
+            if username != user.username:
+                print('калечный респондс')
+                # raise BadRequest('калечный респондс.')
+                return Response(
+                    {'email': 'invalid email'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return data
 
-class ApiUserTokenSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        # if ApiUser.objects.filter(
+        #         username=validated_data.get('username')).first() is not None:
+        #     user = ApiUser.objects.filter(
+        #         username=validated_data.get('username')).first()
+        #     email = validated_data['email']
+        #     if user.email != email:
+        #         return Response({'email': 'invalid email'},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        #     username = validated_data['username']
+        #     send_mail(
+        #         subject='confirmation_code',
+        #         message=f'Your confirm code: "{username}confirmcode"',
+        #         from_email='yamdb@yamdb.api',
+        #         recipient_list=[email],
+        #         fail_silently=True,
+        #     )
+        #     return Response(data=validated_data, status=status.HTTP_200_OK)
+        serializer = SignupSerializer(data=validated_data)
+        serializer.is_valid(raise_exception=True)
+        email = validated_data['email']
+        username = validated_data['username']
+        # if ApiUser.objects.filter(
+        #         email=validated_data.get('email')).first() is not None:
+        #     user = ApiUser.objects.filter(
+        #         email=validated_data.get('email')).first()
+        #     if username != user.username:
+        #         print('калечный респондс')
+        #         # raise BadRequest('калечный респондс.')
+        #         return Response(
+        #             {'email': 'invalid email'},
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+        user = ApiUser.objects.get_or_create(**validated_data)
+        send_mail(
+            subject='confirmation_code',
+            message=f'Your confirm code: "{username}confirmcode"',
+            from_email='yamdb@yamdb.api',
+            recipient_list=[email],
+            fail_silently=True,
+        )
+        return Response(data=validated_data, status=status.HTTP_200_OK)
+
+
+class ApiUserTokenSerializer(serializers.Serializer):
+
+    username = serializers.CharField(
+        max_length=LENGTH_FOR_FIELD, required=True
+    )
 
     class Meta:
         model = ApiUser
@@ -128,19 +203,10 @@ class ApiUserTokenSerializer(serializers.ModelSerializer):
         )
 
 
-class UserDetailSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
+class UserDetailSerializer(ApiUserSerializer):
 
-    class Meta:
-        model = ApiUser
+    class Meta(ApiUserSerializer.Meta):
         read_only_fields = ('role',)
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role'
-        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
