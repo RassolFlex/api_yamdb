@@ -15,7 +15,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (Category,
-                            Comment,
                             CustomUser,
                             Genre,
                             Review,
@@ -227,31 +226,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        if (
-            self.get_queryset().filter(
-                author=self.request.user
-            ).first() is not None
-        ):
-            raise BadRequest('Review with this author to title already exist.')
         serializer.save(author=self.request.user, title=self.get_title())
-
-    def perform_update(self, serializer):
-        if (
-            self.request.user.role != 'user'
-            or Review.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super(ReviewViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Cannot change someone\'s review.')
-
-    def perform_destroy(self, instance):
-        if (
-            self.request.user.role != 'user'
-            or Review.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super().perform_destroy(instance)
-        raise PermissionDenied('Cannot delete someone\'s review.')
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -260,28 +235,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-    def perform_update(self, serializer):
-        if (
-            self.request.user.role != 'user'
-            or Comment.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super(CommentViewSet, self).perform_update(serializer)
-        raise PermissionDenied('Cannot change someone\'s review.')
-
-    def perform_destroy(self, instance):
-        if (
-            self.request.user.role != 'user'
-            or Comment.objects.get(pk=self.kwargs.get('pk')).author
-            == self.request.user
-        ):
-            return super().perform_destroy(instance)
-        raise PermissionDenied('Cannot delete someone\'s review.')
