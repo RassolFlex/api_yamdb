@@ -1,6 +1,5 @@
-from statistics import mean
-
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -12,9 +11,10 @@ from reviews.models import (Category,
                             ApiUser,
                             Genre,
                             Title,
-                            GenreTitle,
                             Comment,
                             Review)
+
+DEFAULT_RATING = 0
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -33,13 +33,14 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
+        allow_null=False,
+        allow_empty=False
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all()
     )
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -47,34 +48,23 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'description',
             'genre',
             'category',
         )
 
-    def create(self, validated_data):
-        genre_data = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genre_data:
-            current_genre, status = Genre.objects.get_or_create(
-                slug=genre
-            )
-            GenreTitle.objects.create(genre=current_genre, title=title)
-        return title
-
-    def get_rating(self, obj):
-        reviews = Title.objects.get(id=obj.id).reviews
-        scores = [score['score'] for score in reviews.values('score')]
-        if len(scores) == 0:
-            return None
-        return int(mean(scores))
+    def to_representation(self, instance):
+        serialized_data = super(TitleSerializerForWrite, self).to_representation(instance)
+        serialized_data['rating'] = DEFAULT_RATING
+        serialized_data.update({'category': CategorySerializer(instance.category, read_only=True).data})
+        serialized_data.update({'genre': GenreSerializer(instance.genre, read_only=True, many=True).data})
+        return serialized_data
 
 
 class TitleSerializerForRead(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(default=DEFAULT_RATING)
 
     class Meta:
         model = Title
@@ -87,13 +77,6 @@ class TitleSerializerForRead(serializers.ModelSerializer):
             'genre',
             'category',
         )
-
-    def get_rating(self, obj):
-        reviews = Title.objects.get(id=obj.id).reviews
-        scores = [score['score'] for score in reviews.values('score')]
-        if len(scores) == 0:
-            return None
-        return int(mean(scores))
 
 
 class ValidateUsernameMixin:
@@ -205,9 +188,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
+    score = serializers.IntegerField(max_value=10, min_value=1)
+
+    def validate(self, attrs):
+        request = self.context['request']
+        if self.context['request'].method == 'POST':
+            title = self.context['view'].get_title()
+            if title.reviews.filter(author=request.user).exists():
+                raise BadRequest(
+                    'Review with this author to title already exist.'
+                )
+        return super().validate(attrs)
 
     class Meta:
-        fields = '__all__'
+        fields = ('title', 'author', 'id', 'text', 'score', 'pub_date')
         read_only_fields = ('title',)
         model = Review
 
@@ -218,6 +212,6 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ('review', 'author', 'id', 'text', 'pub_date')
         read_only_fields = ('title', 'review', 'pub_date')
         model = Comment

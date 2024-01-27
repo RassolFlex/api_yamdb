@@ -12,9 +12,9 @@ from .views import (TitleViewSet,
 
 
 router_v1 = routers.DefaultRouter()
-router_v1.register(r'titles', TitleViewSet)
-router_v1.register(r'genres', GenreViewSet)
-router_v1.register(r'categories', CategoryViewSet)
+router_v1.register(r'titles', TitleViewSet, basename='title')
+router_v1.register(r'genres', GenreViewSet, basename='genre')
+router_v1.register(r'categories', CategoryViewSet, basename='category')
 router_v1.register(
     '^titles/(?P<title_id>.+)/reviews', ReviewViewSet, basename='review'
 )

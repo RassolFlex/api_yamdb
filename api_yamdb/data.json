@@ -1,341 +1,5 @@
 [
     {
-        "model": "reviews.genretitle",
-        "pk": 1,
-        "fields": {
-            "title_id": 1,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 2,
-        "fields": {
-            "title_id": 2,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 3,
-        "fields": {
-            "title_id": 3,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 4,
-        "fields": {
-            "title_id": 4,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 5,
-        "fields": {
-            "title_id": 5,
-            "genre_id": 2
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 6,
-        "fields": {
-            "title_id": 5,
-            "genre_id": 6
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 7,
-        "fields": {
-            "title_id": 5,
-            "genre_id": 7
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 8,
-        "fields": {
-            "title_id": 6,
-            "genre_id": 3
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 9,
-        "fields": {
-            "title_id": 7,
-            "genre_id": 4
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 10,
-        "fields": {
-            "title_id": 8,
-            "genre_id": 7
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 11,
-        "fields": {
-            "title_id": 9,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 12,
-        "fields": {
-            "title_id": 9,
-            "genre_id": 2
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 13,
-        "fields": {
-            "title_id": 10,
-            "genre_id": 4
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 14,
-        "fields": {
-            "title_id": 11,
-            "genre_id": 4
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 15,
-        "fields": {
-            "title_id": 12,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 16,
-        "fields": {
-            "title_id": 12,
-            "genre_id": 5
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 17,
-        "fields": {
-            "title_id": 12,
-            "genre_id": 6
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 18,
-        "fields": {
-            "title_id": 12,
-            "genre_id": 8
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 19,
-        "fields": {
-            "title_id": 13,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 20,
-        "fields": {
-            "title_id": 14,
-            "genre_id": 5
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 21,
-        "fields": {
-            "title_id": 15,
-            "genre_id": 2
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 22,
-        "fields": {
-            "title_id": 15,
-            "genre_id": 6
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 23,
-        "fields": {
-            "title_id": 15,
-            "genre_id": 8
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 24,
-        "fields": {
-            "title_id": 16,
-            "genre_id": 2
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 25,
-        "fields": {
-            "title_id": 17,
-            "genre_id": 2
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 26,
-        "fields": {
-            "title_id": 18,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 27,
-        "fields": {
-            "title_id": 19,
-            "genre_id": 1
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 28,
-        "fields": {
-            "title_id": 20,
-            "genre_id": 7
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 29,
-        "fields": {
-            "title_id": 20,
-            "genre_id": 8
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 30,
-        "fields": {
-            "title_id": 21,
-            "genre_id": 9
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 31,
-        "fields": {
-            "title_id": 22,
-            "genre_id": 10
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 32,
-        "fields": {
-            "title_id": 23,
-            "genre_id": 10
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 33,
-        "fields": {
-            "title_id": 24,
-            "genre_id": 10
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 34,
-        "fields": {
-            "title_id": 25,
-            "genre_id": 8
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 35,
-        "fields": {
-            "title_id": 26,
-            "genre_id": 15
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 36,
-        "fields": {
-            "title_id": 27,
-            "genre_id": 11
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 37,
-        "fields": {
-            "title_id": 27,
-            "genre_id": 14
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 38,
-        "fields": {
-            "title_id": 28,
-            "genre_id": 11
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 39,
-        "fields": {
-            "title_id": 29,
-            "genre_id": 12
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 40,
-        "fields": {
-            "title_id": 30,
-            "genre_id": 14
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 41,
-        "fields": {
-            "title_id": 31,
-            "genre_id": 13
-        }
-    },
-    {
-        "model": "reviews.genretitle",
-        "pk": 42,
-        "fields": {
-            "title_id": 32,
-            "genre_id": 13
-        }
-    },
-    {
         "model": "reviews.customuser",
         "pk": 100,
         "fields": {
@@ -543,6 +207,342 @@
         "fields": {
             "name": "Шансон",
             "slug": "chanson"
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 1,
+        "fields": {
+            "title_id": 1,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 2,
+        "fields": {
+            "title_id": 2,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 3,
+        "fields": {
+            "title_id": 3,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 4,
+        "fields": {
+            "title_id": 4,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 5,
+        "fields": {
+            "title_id": 5,
+            "genre_id": 2
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 6,
+        "fields": {
+            "title_id": 5,
+            "genre_id": 6
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 7,
+        "fields": {
+            "title_id": 5,
+            "genre_id": 7
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 8,
+        "fields": {
+            "title_id": 6,
+            "genre_id": 3
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 9,
+        "fields": {
+            "title_id": 7,
+            "genre_id": 4
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 10,
+        "fields": {
+            "title_id": 8,
+            "genre_id": 7
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 11,
+        "fields": {
+            "title_id": 9,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 12,
+        "fields": {
+            "title_id": 9,
+            "genre_id": 2
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 13,
+        "fields": {
+            "title_id": 10,
+            "genre_id": 4
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 14,
+        "fields": {
+            "title_id": 11,
+            "genre_id": 4
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 15,
+        "fields": {
+            "title_id": 12,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 16,
+        "fields": {
+            "title_id": 12,
+            "genre_id": 5
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 17,
+        "fields": {
+            "title_id": 12,
+            "genre_id": 6
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 18,
+        "fields": {
+            "title_id": 12,
+            "genre_id": 8
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 19,
+        "fields": {
+            "title_id": 13,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 20,
+        "fields": {
+            "title_id": 14,
+            "genre_id": 5
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 21,
+        "fields": {
+            "title_id": 15,
+            "genre_id": 2
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 22,
+        "fields": {
+            "title_id": 15,
+            "genre_id": 6
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 23,
+        "fields": {
+            "title_id": 15,
+            "genre_id": 8
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 24,
+        "fields": {
+            "title_id": 16,
+            "genre_id": 2
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 25,
+        "fields": {
+            "title_id": 17,
+            "genre_id": 2
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 26,
+        "fields": {
+            "title_id": 18,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 27,
+        "fields": {
+            "title_id": 19,
+            "genre_id": 1
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 28,
+        "fields": {
+            "title_id": 20,
+            "genre_id": 7
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 29,
+        "fields": {
+            "title_id": 20,
+            "genre_id": 8
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 30,
+        "fields": {
+            "title_id": 21,
+            "genre_id": 9
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 31,
+        "fields": {
+            "title_id": 22,
+            "genre_id": 10
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 32,
+        "fields": {
+            "title_id": 23,
+            "genre_id": 10
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 33,
+        "fields": {
+            "title_id": 24,
+            "genre_id": 10
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 34,
+        "fields": {
+            "title_id": 25,
+            "genre_id": 8
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 35,
+        "fields": {
+            "title_id": 26,
+            "genre_id": 15
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 36,
+        "fields": {
+            "title_id": 27,
+            "genre_id": 11
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 37,
+        "fields": {
+            "title_id": 27,
+            "genre_id": 14
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 38,
+        "fields": {
+            "title_id": 28,
+            "genre_id": 11
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 39,
+        "fields": {
+            "title_id": 29,
+            "genre_id": 12
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 40,
+        "fields": {
+            "title_id": 30,
+            "genre_id": 14
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 41,
+        "fields": {
+            "title_id": 31,
+            "genre_id": 13
+        }
+    },
+    {
+        "model": "reviews.title_genre",
+        "pk": 42,
+        "fields": {
+            "title_id": 32,
+            "genre_id": 13
         }
     },
     {

@@ -1,3 +1,4 @@
+import datetime
 import re
 
 from django.contrib.auth.models import AbstractUser
@@ -12,46 +13,69 @@ from .constants import (LENGTH_FOR_FIELD,
                         SLICE)
 
 
+class GenreCategoryModel(models.Model):
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME,
+                            verbose_name='Название')
+    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG,
+                            verbose_name='Слаг')
+
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.slug
+
+
 class Title(models.Model):
     name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
     author = models.ForeignKey(
         'ApiUser',
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        verbose_name='Автор'
     )
-    year = models.IntegerField()
-    description = models.TextField(null=True)
-    genre = models.ManyToManyField('Genre', through='GenreTitle')
+    year = models.SmallIntegerField(
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(datetime.date.today().year)
+        ],
+        verbose_name='Год'
+    )
+    description = models.TextField(null=True, verbose_name='Описание')
+    genre = models.ManyToManyField(
+        'Genre',
+        verbose_name='Жанр'
+    )
     category = models.ForeignKey(
         'Category',
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='titles',
+        verbose_name='Категория'
     )
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name[:SLICE]
 
 
-class Genre(models.Model):
-    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
-    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG)
+class Genre(GenreCategoryModel):
 
-    class Meta:
+    class Meta(GenreCategoryModel.Meta):
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
-    def __str__(self):
-        return self.slug[:SLICE]
 
+class Category(GenreCategoryModel):
 
-class Category(models.Model):
-    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
-    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG)
-
-    class Meta:
+    class Meta(GenreCategoryModel.Meta):
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
         ordering = ('name',)
-
-    def __str__(self):
-        return self.slug[:SLICE]
 
 
 class ApiUser(AbstractUser):
@@ -115,22 +139,39 @@ class ApiUser(AbstractUser):
         return self.username[:SLICE]
 
 
-class Review(models.Model):
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews'
-    )
-    text = models.TextField()
+class ReviewAndCommentBaseModel(models.Model):
+    text = models.TextField('Текст отзыва')
     author = models.ForeignKey(
-        ApiUser, on_delete=models.CASCADE, related_name='reviews'
+        ApiUser,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
-    score = models.IntegerField(
-        validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
-        ])
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     class Meta:
+        ordering = ['-pub_date']
+        abstract = True
+
+
+class Review(ReviewAndCommentBaseModel):
+    SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range 1 - 10.'
+
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
+    score = models.SmallIntegerField(
+        'Оценка',
+        validators=[
+            MaxValueValidator(10, SCORE_VALIDATOR_ERROR_MESSAGE),
+            MinValueValidator(1, SCORE_VALIDATOR_ERROR_MESSAGE)
+        ])
+
+    class Meta(ReviewAndCommentBaseModel.Meta):
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'отзывы'
+        default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -142,20 +183,17 @@ class Review(models.Model):
         return self.text[:SLICE]
 
 
-class Comment(models.Model):
+class Comment(ReviewAndCommentBaseModel):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
+        Review,
+        on_delete=models.CASCADE,
+        verbose_name='Отзыв'
     )
-    text = models.TextField()
-    author = models.ForeignKey(
-        ApiUser, on_delete=models.CASCADE, related_name='comments'
-    )
-    pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
+
+    class Meta(ReviewAndCommentBaseModel.Meta):
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
+        default_related_name = 'comments'
 
     def __str__(self):
         return self.text[:SLICE]
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
