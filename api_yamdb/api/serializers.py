@@ -1,10 +1,10 @@
 from statistics import mean
 
-from django.core.exceptions import BadRequest
-from rest_framework import serializers
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from rest_framework.response import Response
-from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.constants import (LENGTH_FOR_FIELD,
                                LENGTH_FOR_FIELD_EMAIL)
@@ -148,19 +148,30 @@ class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
 
     def create(self, validated_data):
         email = validated_data['email']
-        username = validated_data['username']
-        user = ApiUser.objects.get_or_create(**validated_data)
+        if ApiUser.objects.filter(**validated_data).exists():
+            user = ApiUser.objects.get(**validated_data)
+            token = default_token_generator.make_token(user)
+            send_mail(
+                subject='confirmation_code',
+                message=f'Your confirm code: "{token}"',
+                from_email=None,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+            return user
+        user = ApiUser.objects.create(**validated_data)
+        token = default_token_generator.make_token(user)
         send_mail(
             subject='confirmation_code',
-            message=f'Your confirm code: "{username}confirmcode"',
-            from_email='yamdb@yamdb.api',
+            message=f'Your confirm code: "{token}"',
+            from_email=None,
             recipient_list=[email],
             fail_silently=True,
         )
         return user
 
 
-class ApiUserTokenSerializer(serializers.Serializer):
+class ApiUserTokenSerializer(serializers.Serializer, ValidateUsernameMixin):
 
     username = serializers.CharField(
         max_length=LENGTH_FOR_FIELD, required=True
@@ -171,6 +182,17 @@ class ApiUserTokenSerializer(serializers.Serializer):
         fields = (
             'username',
         )
+
+    def create(self, validated_data):
+        user = get_object_or_404(
+            ApiUser, username=validated_data['username'])
+        confirmation_code = validated_data.get('confirmation_code', False)
+        if not confirmation_code:
+            raise serializers.ValidationError('confirmation_code is empty')
+        if not default_token_generator.check_token(user, confirmation_code):
+            return serializers.ValidationError('invalid confirmation code')
+        token = {'token': str(AccessToken.for_user(user))}
+        return token
 
 
 class UserDetailSerializer(ApiUserSerializer):

@@ -1,5 +1,4 @@
 from django.core.exceptions import BadRequest
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (filters,
@@ -13,7 +12,6 @@ from rest_framework.pagination import (LimitOffsetPagination,
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
-from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (Category,
                             Comment,
@@ -55,11 +53,6 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
 
     def perform_update(self, serializer):
         raise MethodNotAllowed(method='patch')
-
-
-class ApiCreateViewSet(mixins.CreateModelMixin,
-                       viewsets.GenericViewSet):
-    pass
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -126,7 +119,7 @@ class ApiUserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     filter_backends = (filters.OrderingFilter, filters.SearchFilter)
     search_fields = ('username',)
-    ordering_fields = ('username',)  # дополнить
+    ordering_fields = ('username',)
     pagination_class = LimitOffsetPagination
     permission_classes = [AdminOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -165,67 +158,15 @@ class SignupAPIView(CreateAPIView):
         serializer.save()
         return Response(data=request.data)
 
-# class SignupViewSet(ApiCreateViewSet):
-#     queryset = ApiUser.objects.all()
-#     serializer_class = SignupSerializer
 
-#     def create(self, request):
-#         if ApiUser.objects.filter(
-#                 username=request.data.get('username')).first() is not None:
-#             user = ApiUser.objects.filter(
-#                 username=request.data.get('username')).first()
-#             email = request.data['email']
-#             if user.email != email:
-#                 return Response({'email': 'invalid email'},
-#                                 status=status.HTTP_400_BAD_REQUEST)
-#             username = request.data['username']
-#             send_mail(
-#                 subject='confirmation_code',
-#                 message=f'Your confirm code: "{username}confirmcode"',
-#                 from_email='yamdb@yamdb.api',
-#                 recipient_list=[email],
-#                 fail_silently=True,
-#             )
-#             return Response(data=request.data, status=status.HTTP_200_OK)
-#         serializer = SignupSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         email = request.data['email']
-#         username = request.data['username']
-#         user = ApiUser.objects.get_or_create(username=username, email=email)
-#         send_mail(
-#             subject='confirmation_code',
-#             message=f'Your confirm code: "{username}confirmcode"',
-#             from_email='yamdb@yamdb.api',
-#             recipient_list=[email],
-#             fail_silently=True,
-#         )
-#         return Response(data=request.data, status=status.HTTP_200_OK)
-
-
-class GetTokenViewSet(ApiCreateViewSet):
-    queryset = ApiUser.objects.all()
+class GetTokenAPIView(CreateAPIView):
     serializer_class = ApiUserTokenSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = ApiUserTokenSerializer(data=request.data)
-        serializer.is_valid()
-        username = request.data.get('username', False)
-        if not username:
-            return Response({'username': 'username is empty'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        user = get_object_or_404(
-            ApiUser, username=username)
-        expected_conf_code = f'{username}confirmcode'
-        confirmation_code = request.data.get('confirmation_code', False)
-        if not confirmation_code:
-            return Response({
-                'confirmation_code': 'confirmation_code is empty'},
-                status=status.HTTP_400_BAD_REQUEST)
-        if confirmation_code != expected_conf_code:
-            return Response({'confirmation_code': 'invalid confirmation code'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        token = {'token': str(AccessToken.for_user(user))}
-        return Response(token, status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(data=request.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
