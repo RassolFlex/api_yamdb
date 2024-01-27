@@ -5,9 +5,15 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from rest_framework import serializers
 
+from .constants import (LENGTH_FOR_FIELD,
+                        LENGTH_FOR_FIELD_EMAIL,
+                        LENGTH_FOR_FIELD_NAME,
+                        LENGTH_FOR_FIELD_SLUG,
+                        SLICE)
+
 
 class Title(models.Model):
-    name = models.CharField(max_length=28)
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
     author = models.ForeignKey(
         'ApiUser',
         on_delete=models.SET_NULL,
@@ -23,29 +29,29 @@ class Title(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return self.name[:SLICE]
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
+    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG)
 
     class Meta:
         ordering = ('name',)
 
     def __str__(self):
-        return self.slug
+        return self.slug[:SLICE]
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME)
+    slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG)
 
     class Meta:
         ordering = ('name',)
 
     def __str__(self):
-        return self.slug
+        return self.slug[:SLICE]
 
 
 class ApiUser(AbstractUser):
@@ -59,22 +65,22 @@ class ApiUser(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     username = models.CharField(
-        'Логин', max_length=150, unique=True
+        'Логин', max_length=LENGTH_FOR_FIELD, unique=True
     )
     first_name = models.CharField(
-        'Имя', max_length=150, null=True, blank=True
+        'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True
     )
     last_name = models.CharField(
-        'Фамилия', max_length=150, null=True, blank=True
+        'Фамилия', max_length=LENGTH_FOR_FIELD, null=True, blank=True
     )
     role = models.CharField(
         'Роль',
-        max_length=30,
+        max_length=max((len(role[0]) for role in UserRoles.choices)),
         choices=UserRoles.choices,
         default=UserRoles.USER,
     )
     email = models.EmailField(
-        'email address', max_length=254, unique=True
+        'email address', max_length=LENGTH_FOR_FIELD_EMAIL, unique=True
     )
     bio = models.TextField(
         'Информация', null=True, blank=True
@@ -87,7 +93,7 @@ class ApiUser(AbstractUser):
     def check_username(username):
         if not username:
             raise serializers.ValidationError('Username must be not empty.')
-        if len(username) > 150:
+        if len(username) > LENGTH_FOR_FIELD:
             raise serializers.ValidationError('Username over 150 length.')
         if username == 'me':
             raise serializers.ValidationError(
@@ -106,7 +112,7 @@ class ApiUser(AbstractUser):
         return self.role == 'moderator'
 
     def __str__(self):
-        return self.username
+        return self.username[:SLICE]
 
 
 class Review(models.Model):
@@ -133,7 +139,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:SLICE]
 
 
 class Comment(models.Model):
@@ -147,7 +153,7 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     def __str__(self):
-        return self.text
+        return self.text[:SLICE]
 
 
 class GenreTitle(models.Model):

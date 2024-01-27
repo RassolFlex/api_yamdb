@@ -108,18 +108,6 @@ class ApiUserSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
             'role',
         )
 
-    def create(self, validated_data):
-        return ApiUser.objects.create()
-
-    # def validate_username(self, username):
-    #     if username == 'me':
-    #         raise serializers.ValidationError(
-    #             'Username should not be equal "me".')
-    #     pattern = r'^[\w.@+-]+\Z'
-    #     if not re.match(pattern, username):
-    #         raise serializers.ValidationError('Invalid username.')
-    #     return username
-
 
 class SignupSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
 
@@ -129,15 +117,6 @@ class SignupSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
             'username',
             'email'
         )
-
-    # def validate_username(self, username):
-    #     if username == 'me':
-    #         raise serializers.ValidationError(
-    #             'Username should not be equal "me".')
-    #     pattern = r'^[\w.@+-]+\Z'
-    #     if not re.match(pattern, username):
-    #         raise serializers.ValidationError('Invalid username.')
-    #     return username
 
 
 class ApiUserTokenSerializer(serializers.ModelSerializer):
@@ -162,16 +141,6 @@ class UserDetailSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
             'bio',
             'role'
         )
-
-    # def validate_username(self, username):
-    #     if not username:
-    #         raise serializers.ValidationError('Username must be not empty.')
-    #     if len(username) > 150:
-    #         raise serializers.ValidationError('Username over 150 length.')
-    #     pattern = r'^[\w.@+-]+\Z'
-    #     if not re.match(pattern, username):
-    #         raise serializers.ValidationError('Invalid username.')
-    #     return username
 
 
 class ReviewSerializer(serializers.ModelSerializer):

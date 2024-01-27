@@ -24,7 +24,13 @@ router_v1.register(
     CommentViewSet,
     basename='comment'
 )
-router_v1.register(r'users', ApiUserViewSet)
+router_v1.register(r'users', ApiUserViewSet, basename='users')
+
+auth_patterns = [
+    path('signup/', SignupViewSet.as_view({'post': 'create'}), name='signup'),
+    path('token/', GetTokenViewSet.as_view({'post': 'create'}),
+         name='get_token'),
+]
 
 urlpatterns = [
     path('v1/users/me/', MeViewSet.as_view({
@@ -32,8 +38,5 @@ urlpatterns = [
         'patch': 'partial_update'
     }), name='me'),
     path('v1/', include(router_v1.urls)),
-    path('v1/auth/signup/',
-         SignupViewSet.as_view({'post': 'create'}), name='signup'),
-    path('v1/auth/token/', GetTokenViewSet.as_view({'post': 'create'}),
-         name='get_token'),
+    path('v1/auth/', include(auth_patterns)),
 ]
