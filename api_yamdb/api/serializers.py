@@ -132,53 +132,23 @@ class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
         )
 
     def validate(self, data):
-        username = data['username']
         if ApiUser.objects.filter(
-                email=data.get('email')).first() is not None:
+                email=data['email']).exists():
             user = ApiUser.objects.filter(
-                email=data.get('email')).first()
-            if username != user.username:
-                print('калечный респондс')
-                # raise BadRequest('калечный респондс.')
-                return Response(
-                    {'email': 'invalid email'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                email=data['email']).first()
+            if data['username'] != user.username:
+                raise serializers.ValidationError('Username already taken.')
+        if ApiUser.objects.filter(
+                username=data['username']).exists():
+            user = ApiUser.objects.filter(
+                username=data['username']).first()
+            if data['email'] != user.email:
+                raise serializers.ValidationError('Email already exists.')
         return data
 
     def create(self, validated_data):
-        # if ApiUser.objects.filter(
-        #         username=validated_data.get('username')).first() is not None:
-        #     user = ApiUser.objects.filter(
-        #         username=validated_data.get('username')).first()
-        #     email = validated_data['email']
-        #     if user.email != email:
-        #         return Response({'email': 'invalid email'},
-        #                         status=status.HTTP_400_BAD_REQUEST)
-        #     username = validated_data['username']
-        #     send_mail(
-        #         subject='confirmation_code',
-        #         message=f'Your confirm code: "{username}confirmcode"',
-        #         from_email='yamdb@yamdb.api',
-        #         recipient_list=[email],
-        #         fail_silently=True,
-        #     )
-        #     return Response(data=validated_data, status=status.HTTP_200_OK)
-        serializer = SignupSerializer(data=validated_data)
-        serializer.is_valid(raise_exception=True)
         email = validated_data['email']
         username = validated_data['username']
-        # if ApiUser.objects.filter(
-        #         email=validated_data.get('email')).first() is not None:
-        #     user = ApiUser.objects.filter(
-        #         email=validated_data.get('email')).first()
-        #     if username != user.username:
-        #         print('калечный респондс')
-        #         # raise BadRequest('калечный респондс.')
-        #         return Response(
-        #             {'email': 'invalid email'},
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
         user = ApiUser.objects.get_or_create(**validated_data)
         send_mail(
             subject='confirmation_code',
@@ -187,7 +157,7 @@ class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
             recipient_list=[email],
             fail_silently=True,
         )
-        return Response(data=validated_data, status=status.HTTP_200_OK)
+        return user
 
 
 class ApiUserTokenSerializer(serializers.Serializer):
