@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .constants import LIST_PER_PAGE
-from .models import Comment, ApiUser, Review, Title, Category, Genre
+from .models import ApiUser, Category, Comment, Genre, Review, Title
 
 
 class ReviewAndCommentBaseAdmin(admin.ModelAdmin):
@@ -13,9 +13,10 @@ class ReviewAndCommentBaseAdmin(admin.ModelAdmin):
     )
     list_display_links = ('text',)
     search_fields = ('author', 'text', 'pub_date')
-    empty_value_display = '-пусто-'
+    empty_value_display = 'Не указано'
 
 
+@admin.register(Review)
 class ReviewAdmin(ReviewAndCommentBaseAdmin):
 
     def get_list_display(self, request):
@@ -25,6 +26,7 @@ class ReviewAdmin(ReviewAndCommentBaseAdmin):
         return self.list_display_links + ('title',)
 
 
+@admin.register(Comment)
 class CommentAdmin(ReviewAndCommentBaseAdmin):
 
     def get_list_display(self, request):
@@ -67,10 +69,6 @@ class ApiUserAdmin(BaseUserAdmin):
     list_display_links = ('username', 'email',)
     list_per_page = LIST_PER_PAGE
     empty_value_display = 'Не указано'
-
-
-admin.site.register(Comment, CommentAdmin)
-admin.site.register(Review, ReviewAdmin)
 
 
 class GenreCategoryAdmin(admin.ModelAdmin):

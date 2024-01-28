@@ -10,7 +10,9 @@ from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_EMAIL,
                         LENGTH_FOR_FIELD_NAME,
                         LENGTH_FOR_FIELD_SLUG,
-                        SLICE)
+                        SLICE,
+                        MAX_SCORE_VALUE,
+                        MIN_SCORE_VALUE)
 
 
 class GenreCategoryModel(models.Model):
@@ -152,9 +154,14 @@ class ReviewAndCommentBaseModel(models.Model):
         ordering = ['-pub_date']
         abstract = True
 
+    def __str__(self):
+        return self.text[:SLICE]
+
 
 class Review(ReviewAndCommentBaseModel):
-    SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range 1 - 10.'
+    SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range {} - {}.'.format(
+        MIN_SCORE_VALUE, MAX_SCORE_VALUE
+    )
 
     title = models.ForeignKey(
         Title,
@@ -164,8 +171,14 @@ class Review(ReviewAndCommentBaseModel):
     score = models.SmallIntegerField(
         'Оценка',
         validators=[
-            MaxValueValidator(10, SCORE_VALIDATOR_ERROR_MESSAGE),
-            MinValueValidator(1, SCORE_VALIDATOR_ERROR_MESSAGE)
+            MaxValueValidator(
+                MAX_SCORE_VALUE,
+                SCORE_VALIDATOR_ERROR_MESSAGE
+            ),
+            MinValueValidator(
+                MIN_SCORE_VALUE,
+                SCORE_VALIDATOR_ERROR_MESSAGE
+            )
         ])
 
     class Meta(ReviewAndCommentBaseModel.Meta):
@@ -179,9 +192,6 @@ class Review(ReviewAndCommentBaseModel):
             )
         ]
 
-    def __str__(self):
-        return self.text[:SLICE]
-
 
 class Comment(ReviewAndCommentBaseModel):
     review = models.ForeignKey(
@@ -194,6 +204,3 @@ class Comment(ReviewAndCommentBaseModel):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
         default_related_name = 'comments'
-
-    def __str__(self):
-        return self.text[:SLICE]
