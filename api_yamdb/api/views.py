@@ -79,7 +79,7 @@ class ApiUserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     ordering_fields = ('username',)
     pagination_class = LimitOffsetPagination
-    permission_classes = [AdminOnly]
+    permission_classes = (AdminOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(methods=['GET', 'PATCH'],
