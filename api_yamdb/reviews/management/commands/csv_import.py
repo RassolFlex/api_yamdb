@@ -22,3 +22,14 @@ class Command(BaseCommand):
                 csv_data.append(model_dict)
         with open('data.json', 'w') as f:
             json.dump(csv_data, f, ensure_ascii=False, indent=4)
+
+        # Импорт напрямую в БД - не получается таким методом,
+        # таблицы ожидают на вход инстанс объектов,
+        # а получают - ID, из-за этого получаем ошибки
+        # for file in listdir('static/data/'):
+        #     model_name = Path(file).stem
+        #     model_class = apps.get_model(APP_LABEL, model_name)
+        #     with open(f'static/data/{file}', newline='') as f:
+        #         dataframe = csv.DictReader(f)
+        #         for row in dataframe:
+        #             model_class.objects.create(**row)

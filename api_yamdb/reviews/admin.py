@@ -72,48 +72,52 @@ class ApiUserAdmin(BaseUserAdmin):
 
 
 class GenreCategoryAdmin(admin.ModelAdmin):
-    list_display = [
+    list_display = (
         'name',
         'slug'
-    ]
-    list_editable = [
+    )
+    list_editable = (
         'slug'
-    ]
-    list_filter = [
+    )
+    list_filter = (
         'name',
-    ]
-    search_fields = ['name']
+    )
+    search_fields = ('name',)
+    list_per_page = LIST_PER_PAGE
+    empty_value_display = 'Не указано'
 
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = [
+    list_display = (
         'name',
         'author',
         'year',
         'category',
         'get_genre',
         'description',
-    ]
-    list_editable = [
+    )
+    list_editable = (
         'author',
         'year',
         'description',
         'category',
-    ]
-    list_filter = [
+    )
+    list_filter = (
         'author',
         'year',
         'genre',
         'category',
-    ]
-    search_fields = [
+    )
+    search_fields = (
         'name',
         'author__username',
         'genre__name',
         'category__name',
         'year'
-    ]
+    )
+    list_per_page = LIST_PER_PAGE
+    empty_value_display = 'Не указано'
 
     def get_genre(self, obj):
         return '\n'.join([i.slug for i in obj.genre.all()])

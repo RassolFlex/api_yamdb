@@ -12,7 +12,8 @@ from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_SLUG,
                         SLICE,
                         MAX_SCORE_VALUE,
-                        MIN_SCORE_VALUE)
+                        MIN_SCORE_VALUE,
+                        MIN_YEAR_VALUE)
 
 
 class GenreCategoryModel(models.Model):
@@ -39,7 +40,7 @@ class Title(models.Model):
     )
     year = models.SmallIntegerField(
         validators=[
-            MinValueValidator(1000),
+            MinValueValidator(MIN_YEAR_VALUE),
             MaxValueValidator(datetime.date.today().year)
         ],
         verbose_name='Год'
