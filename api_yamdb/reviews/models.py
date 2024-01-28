@@ -26,7 +26,7 @@ class GenreCategoryModel(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.slug
+        return self.slug[:SLICE]
 
 
 class Title(models.Model):
@@ -115,6 +115,7 @@ class ApiUser(AbstractUser):
     class Meta():
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     def check_username(username):
         if not username:
@@ -151,7 +152,7 @@ class ReviewAndCommentBaseModel(models.Model):
     pub_date = models.DateTimeField('Дата создания', auto_now_add=True)
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         abstract = True
 
     def __str__(self):
