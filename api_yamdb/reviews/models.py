@@ -11,8 +11,15 @@ NAME_SLICE_END = 19
 
 
 class GenreCategoryModel(models.Model):
-    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
-    slug = models.SlugField(unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг')
+    name = models.CharField(
+        max_length=NAME_MAX_LENGTH,
+        verbose_name='Название'
+    )
+    slug = models.SlugField(
+        unique=True,
+        max_length=SLUG_MAX_LENGTH,
+        verbose_name='Слаг'
+    )
 
     class Meta:
         abstract = True
@@ -23,7 +30,10 @@ class GenreCategoryModel(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название')
+    name = models.CharField(
+        max_length=NAME_MAX_LENGTH,
+        verbose_name='Название'
+    )
     author = models.ForeignKey(
         'CustomUser',
         on_delete=models.SET_NULL,
