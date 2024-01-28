@@ -74,10 +74,10 @@ class ApiUserAdmin(BaseUserAdmin):
 class GenreCategoryAdmin(admin.ModelAdmin):
     list_display = (
         'name',
-        'slug'
+        'slug',
     )
     list_editable = (
-        'slug'
+        'slug',
     )
     list_filter = (
         'name',
