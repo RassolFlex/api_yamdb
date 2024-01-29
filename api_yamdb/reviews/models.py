@@ -1,10 +1,8 @@
 import datetime
-import re
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from rest_framework import serializers
 
 from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_EMAIL,
@@ -14,6 +12,7 @@ from .constants import (LENGTH_FOR_FIELD,
                         SLICE,
                         MAX_SCORE_VALUE,
                         MIN_SCORE_VALUE)
+from .validators import check_username
 
 
 class NameSlugModel(models.Model):
@@ -89,10 +88,11 @@ class ApiUser(AbstractUser):
         ADMIN = 'admin', 'Администратор'
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ('username',)
 
     username = models.CharField(
-        'Логин', max_length=LENGTH_FOR_FIELD, unique=True
+        'Логин', max_length=LENGTH_FOR_FIELD, unique=True,
+        validators=[check_username]
     )
     first_name = models.CharField(
         'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True
@@ -102,7 +102,7 @@ class ApiUser(AbstractUser):
     )
     role = models.CharField(
         'Роль',
-        max_length=max((len(role[0]) for role in UserRoles.choices)),
+        max_length=max(len(role) for role, _ in UserRoles.choices),
         choices=UserRoles.choices,
         default=UserRoles.USER,
     )
@@ -117,19 +117,6 @@ class ApiUser(AbstractUser):
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
-
-    def check_username(username):
-        if not username:
-            raise serializers.ValidationError('Username must be not empty.')
-        if len(username) > LENGTH_FOR_FIELD:
-            raise serializers.ValidationError('Username over 150 length.')
-        if username == 'me':
-            raise serializers.ValidationError(
-                'Username should not be equal "me".')
-        pattern = r'^[\w.@+-]+\Z'
-        if not re.match(pattern, username):
-            raise serializers.ValidationError('Invalid username.')
-        return username
 
     @property
     def is_admin(self):
