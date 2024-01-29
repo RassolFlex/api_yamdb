@@ -37,7 +37,7 @@ class Command(BaseCommand):
                         except IntegrityError:
                             print(
                                 f'Object {model_name} ID:'
-                                f'{row.get('id')} already exists'
+                                f'{row.get("id")} already exists'
                             )
                             continue
                     print(f'Data import finished for model: {model_name}')
