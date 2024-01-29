@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.constants import (LENGTH_FOR_FIELD,
                                LENGTH_FOR_FIELD_EMAIL,
                                MIN_SCORE_VALUE,
-                               MAX_SCORE_VALUE)
+                               MAX_SCORE_VALUE, SCORE_VALIDATOR_ERROR_MESSAGE)
 from reviews.models import (Category,
                             ApiUser,
                             Genre,
@@ -209,7 +209,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True, default=serializers.CurrentUserDefault()
     )
     score = serializers.IntegerField(
-        max_value=MAX_SCORE_VALUE, min_value=MIN_SCORE_VALUE
+        max_value=MAX_SCORE_VALUE, min_value=MIN_SCORE_VALUE,
+        error_messages={
+            'max_value': SCORE_VALIDATOR_ERROR_MESSAGE,
+            'min_value': SCORE_VALIDATOR_ERROR_MESSAGE
+        }
     )
 
     def validate(self, attrs):
