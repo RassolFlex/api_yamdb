@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
+from reviews.validators import check_username
 from reviews.constants import (LENGTH_FOR_FIELD,
                                LENGTH_FOR_FIELD_EMAIL,
                                MIN_SCORE_VALUE,
@@ -79,7 +80,7 @@ class TitleSerializerForRead(serializers.ModelSerializer):
 
 class ValidateUsernameMixin:
     def validate_username(self, username):
-        return ApiUser.get_username(self)
+        return check_username(username)
 
 
 class ApiUserSerializer(serializers.ModelSerializer, ValidateUsernameMixin):

@@ -10,8 +10,7 @@ from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_SLUG,
                         SLICE,
                         MAX_SCORE_VALUE,
-                        MIN_SCORE_VALUE,
-                        MIN_YEAR_VALUE)
+                        MIN_SCORE_VALUE)
 from .validators import check_username
 
 
