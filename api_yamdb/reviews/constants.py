@@ -24,6 +24,14 @@ MAX_SCORE_VALUE = 10
 MIN_SCORE_VALUE = 1
 """Минимально доступная оценка для произведения."""
 
+MIN_YEAR_VALUE = 1000
+"""Минимально допустимый год для произведения."""
+
+SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range {} - {}.'.format(
+    MIN_SCORE_VALUE, MAX_SCORE_VALUE
+)
+"""Сообщение об ошибке неверного значения оценки."""
+
 DEFAULT_RATING = 0
 """Значение для создания новой модели произведения."""
 

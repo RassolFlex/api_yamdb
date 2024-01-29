@@ -10,6 +10,7 @@ from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_EMAIL,
                         LENGTH_FOR_FIELD_NAME,
                         LENGTH_FOR_FIELD_SLUG,
+                        SCORE_VALIDATOR_ERROR_MESSAGE,
                         SLICE,
                         MAX_SCORE_VALUE,
                         MIN_SCORE_VALUE)
@@ -142,7 +143,7 @@ class ApiUser(AbstractUser):
         return self.username[:SLICE]
 
 
-class ReviewAndCommentBaseModel(models.Model):
+class TextAuthorPubDateBaseModel(models.Model):
     text = models.TextField('Текст отзыва')
     author = models.ForeignKey(
         ApiUser,
@@ -159,17 +160,14 @@ class ReviewAndCommentBaseModel(models.Model):
         return self.text[:SLICE]
 
 
-class Review(ReviewAndCommentBaseModel):
-    SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range {} - {}.'.format(
-        MIN_SCORE_VALUE, MAX_SCORE_VALUE
-    )
+class Review(TextAuthorPubDateBaseModel):
 
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         verbose_name='Произведение'
     )
-    score = models.SmallIntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка',
         validators=[
             MaxValueValidator(
@@ -182,7 +180,7 @@ class Review(ReviewAndCommentBaseModel):
             )
         ])
 
-    class Meta(ReviewAndCommentBaseModel.Meta):
+    class Meta(TextAuthorPubDateBaseModel.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         default_related_name = 'reviews'
@@ -194,14 +192,14 @@ class Review(ReviewAndCommentBaseModel):
         ]
 
 
-class Comment(ReviewAndCommentBaseModel):
+class Comment(TextAuthorPubDateBaseModel):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         verbose_name='Отзыв'
     )
 
-    class Meta(ReviewAndCommentBaseModel.Meta):
+    class Meta(TextAuthorPubDateBaseModel.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
         default_related_name = 'comments'
