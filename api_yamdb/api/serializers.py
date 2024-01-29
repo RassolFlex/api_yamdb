@@ -101,7 +101,7 @@ class TitleSerializerForRead(serializers.ModelSerializer):
 
 class ValidateUsernameMixin:
     def validate_username(self, username):
-        return ApiUser.check_username(username)
+        return ApiUser.get_username(self)
 
 
 class ApiUserSerializer(serializers.ModelSerializer, ValidateUsernameMixin):
