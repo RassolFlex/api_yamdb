@@ -12,11 +12,10 @@ from .constants import (LENGTH_FOR_FIELD,
                         LENGTH_FOR_FIELD_SLUG,
                         SLICE,
                         MAX_SCORE_VALUE,
-                        MIN_SCORE_VALUE,
-                        MIN_YEAR_VALUE)
+                        MIN_SCORE_VALUE)
 
 
-class GenreCategoryModel(models.Model):
+class NameSlugModel(models.Model):
     name = models.CharField(max_length=LENGTH_FOR_FIELD_NAME,
                             verbose_name='Название')
     slug = models.SlugField(unique=True, max_length=LENGTH_FOR_FIELD_SLUG,
@@ -40,15 +39,15 @@ class Title(models.Model):
     )
     year = models.SmallIntegerField(
         validators=[
-            MinValueValidator(MIN_YEAR_VALUE),
             MaxValueValidator(datetime.date.today().year)
         ],
-        verbose_name='Год'
+        verbose_name='Год',
     )
     description = models.TextField(null=True, verbose_name='Описание')
     genre = models.ManyToManyField(
         'Genre',
-        verbose_name='Жанр'
+        verbose_name='Жанр',
+        db_index=True
     )
     category = models.ForeignKey(
         'Category',
@@ -65,17 +64,17 @@ class Title(models.Model):
         return self.name[:SLICE]
 
 
-class Genre(GenreCategoryModel):
+class Genre(NameSlugModel):
 
-    class Meta(GenreCategoryModel.Meta):
+    class Meta(NameSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
 
-class Category(GenreCategoryModel):
+class Category(NameSlugModel):
 
-    class Meta(GenreCategoryModel.Meta):
+    class Meta(NameSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ('name',)

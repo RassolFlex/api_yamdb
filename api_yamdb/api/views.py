@@ -53,7 +53,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleSearchFilter
     ordering_fields = ('genre', 'category', 'year',)
     filterset_fields = ('genre', 'category', 'year',)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     def get_serializer_class(self):
         if self.request.method not in permissions.SAFE_METHODS:
@@ -80,7 +80,7 @@ class ApiUserViewSet(viewsets.ModelViewSet):
     ordering_fields = ('username',)
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminOnly,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     @action(methods=['GET', 'PATCH'],
             detail=False,
@@ -145,7 +145,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (PermissionForReviewsAndComments,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     def get_review(self):
         return get_object_or_404(

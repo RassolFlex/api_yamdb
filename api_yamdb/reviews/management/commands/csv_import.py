@@ -1,35 +1,43 @@
-import json
-from os import listdir
 from pathlib import Path
+import csv
+from sqlite3 import IntegrityError
 
-import pandas
 from django.core.management.base import BaseCommand
+from django.apps import apps
+from django.db.utils import IntegrityError
+
+from reviews.constants import APP_LABEL
+
+
+class FileOpenException(Exception):
+    """Вызов исключения при некорректном открытии файла."""
+    pass
 
 
 class Command(BaseCommand):
     def handle(self, **options):
-        csv_data = []
-        for file in listdir('static/data/'):
-            dataframe = pandas.read_csv(Path(f'static/data/{file}'))
-            json_file = dataframe.to_json(orient='records')
-            parsed = json.loads(json_file)
-            for index, item in enumerate(parsed):
-                model_dict = dict()
-                model_dict['model'] = f'reviews.{Path(file).stem}'
-                pk = parsed[index].pop('id')
-                model_dict['pk'] = pk
-                model_dict['fields'] = parsed[index]
-                csv_data.append(model_dict)
-        with open('data.json', 'w') as f:
-            json.dump(csv_data, f, ensure_ascii=False, indent=4)
-
-        # Импорт напрямую в БД - не получается таким методом,
-        # таблицы ожидают на вход инстанс объектов,
-        # а получают - ID, из-за этого получаем ошибки
-        # for file in listdir('static/data/'):
-        #     model_name = Path(file).stem
-        #     model_class = apps.get_model(APP_LABEL, model_name)
-        #     with open(f'static/data/{file}', newline='') as f:
-        #         dataframe = csv.DictReader(f)
-        #         for row in dataframe:
-        #             model_class.objects.create(**row)
+        files = [
+            'apiuser.csv',
+            'category.csv',
+            'genre.csv',
+            'title.csv',
+            'title_genre.csv',
+            'review.csv',
+            'comment.csv',
+        ]
+        for file in files:
+            model_name = Path(file).stem
+            model_class = apps.get_model(APP_LABEL, model_name)
+            try:
+                with open(f'static/data/{file}', newline='') as f:
+                    dataframe = csv.DictReader(f)
+                    for row in dataframe:
+                        try:
+                            model_class.objects.create(**row)
+                        except IntegrityError:
+                            print(f'Object {model_name} ID:{row.get('id')} already exists')
+                            continue
+                    print(f'Data import finished for model: {model_name}')
+            except FileOpenException as error:
+                print(f'Ошибка при открытии файла: {error}')
+                continue
