@@ -31,3 +31,9 @@ SCORE_VALIDATOR_ERROR_MESSAGE = 'Score must be in range {} - {}.'.format(
     MIN_SCORE_VALUE, MAX_SCORE_VALUE
 )
 """Сообщение об ошибке неверного значения оценки."""
+
+DEFAULT_RATING = 0
+"""Значение для создания новой модели произведения."""
+
+APP_LABEL = 'reviews'
+"""Название приложения для вызова класса модели."""
