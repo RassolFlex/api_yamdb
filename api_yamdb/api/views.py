@@ -80,31 +80,26 @@ class ApiUserViewSet(viewsets.ModelViewSet):
     ordering_fields = ('username',)
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminOnly,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
-    @action(methods=['GET', 'PATCH'],
+    @action(methods=['GET'],
             detail=False,
             permission_classes=(permissions.IsAuthenticated,),
             url_path='me')
     def get_detail_user(self, request):
         serializer = ApiUserSerializer(request.user)
-        if request.method == 'PATCH':
-            if request.user.role == 'user':
-                serializer = UserDetailSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True
-                )
-            else:
-                serializer = ApiUserSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True
-                )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(data=serializer.data)
+
+    @get_detail_user.mapping.patch
+    def update_user(self, request):
+        serializer = UserDetailSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class SignupAPIView(CreateAPIView):

@@ -136,33 +136,19 @@ class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
 
     def validate(self, data):
         if ApiUser.objects.filter(
+                username=data['username'],
                 email=data['email']).exists():
-            user = ApiUser.objects.filter(
-                email=data['email']).first()
-            if data['username'] != user.username:
-                raise serializers.ValidationError('Username already taken.')
-        if ApiUser.objects.filter(
-                username=data['username']).exists():
-            user = ApiUser.objects.filter(
-                username=data['username']).first()
-            if data['email'] != user.email:
-                raise serializers.ValidationError('Email already exists.')
+            return data
+        if ApiUser.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError('Username already taken.')
+        if ApiUser.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError('Email already exists.')
         return data
 
     def create(self, validated_data):
         email = validated_data['email']
-        if ApiUser.objects.filter(**validated_data).exists():
-            user = ApiUser.objects.get(**validated_data)
-            token = default_token_generator.make_token(user)
-            send_mail(
-                subject='confirmation_code',
-                message=f'Your confirm code: "{token}"',
-                from_email=None,
-                recipient_list=[email],
-                fail_silently=True,
-            )
-            return user
-        user = ApiUser.objects.create(**validated_data)
+        user, existing = ApiUser.objects.get_or_create(**validated_data)
+        user = ApiUser.objects.get(**validated_data)
         token = default_token_generator.make_token(user)
         send_mail(
             subject='confirmation_code',
