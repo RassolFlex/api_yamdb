@@ -37,7 +37,7 @@ class Title(models.Model):
         null=True,
         verbose_name='Автор'
     )
-    year = models.SmallIntegerField(
+    year = models.PositiveSmallIntegerField(
         validators=[
             MaxValueValidator(datetime.date.today().year)
         ],

@@ -35,7 +35,10 @@ class Command(BaseCommand):
                         try:
                             model_class.objects.create(**row)
                         except IntegrityError:
-                            print(f'Object {model_name} ID:{row.get('id')} already exists')
+                            print(
+                                f'Object {model_name} ID:'
+                                f'{row.get('id')} already exists'
+                            )
                             continue
                     print(f'Data import finished for model: {model_name}')
             except FileOpenException as error:
