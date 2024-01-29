@@ -12,7 +12,6 @@ iniconfig==2.0.0
 mccabe==0.7.0
 numpy==1.26.3
 packaging==23.2
-pandas==2.2.0
 pluggy==0.13.1
 py==1.11.0
 pycodestyle==2.11.1

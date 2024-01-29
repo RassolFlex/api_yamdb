@@ -119,8 +119,9 @@ class TitleAdmin(admin.ModelAdmin):
     list_per_page = LIST_PER_PAGE
     empty_value_display = 'Не указано'
 
+    @admin.display(description='Жанр')
     def get_genre(self, obj):
-        return '\n'.join([i.slug for i in obj.genre.all()])
+        return ' ,'.join([genre.slug for genre in obj.genre.all()])
 
 
 @admin.register(Genre)
