@@ -8,15 +8,14 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.constants import (LENGTH_FOR_FIELD,
                                LENGTH_FOR_FIELD_EMAIL,
                                MIN_SCORE_VALUE,
-                               MAX_SCORE_VALUE)
+                               MAX_SCORE_VALUE,
+                               DEFAULT_RATING)
 from reviews.models import (Category,
                             ApiUser,
                             Genre,
                             Title,
                             Comment,
                             Review)
-
-DEFAULT_RATING = 0
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -56,28 +55,7 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        serialized_data = super(
-            TitleSerializerForWrite,
-            self
-        ).to_representation(instance)
-        serialized_data['rating'] = DEFAULT_RATING
-        serialized_data.update(
-            {
-                'category': CategorySerializer(
-                    instance.category,
-                    read_only=True
-                ).data
-            }
-        )
-        serialized_data.update(
-            {
-                'genre': GenreSerializer(
-                    instance.genre,
-                    read_only=True,
-                    many=True
-                ).data
-            }
-        )
+        serialized_data = TitleSerializerForRead(instance=instance).data
         return serialized_data
 
 

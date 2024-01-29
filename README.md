@@ -37,12 +37,13 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-4. Заполните БД тестовыми данными выполнив следующие команды:
+4. Заполните БД тестовыми данными выполнив следующую команду:
 
 ```
 python manage.py csv_import
-python manage.py loaddata data.json
 ```
+
+Файлы с данными в формате CSV должны находится в папке ```api_yamdb/static/data/```
 
 5. Запустите сервер:
 
