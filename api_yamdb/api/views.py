@@ -46,7 +46,8 @@ class DestroyCreateListViewSet(mixins.ListModelMixin,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('name',)
     serializer_class = TitleSerializerForWrite
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
@@ -87,8 +88,7 @@ class ApiUserViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,),
             url_path='me')
     def get_detail_user(self, request):
-        serializer = ApiUserSerializer(request.user)
-        return Response(data=serializer.data)
+        return Response(data=ApiUserSerializer(request.user).data)
 
     @get_detail_user.mapping.patch
     def update_user(self, request):
@@ -125,7 +125,7 @@ class GetTokenAPIView(CreateAPIView):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (PermissionForReviewsAndComments,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))

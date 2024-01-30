@@ -1,5 +1,3 @@
-import datetime
-
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -12,7 +10,7 @@ from .constants import (LENGTH_FOR_FIELD,
                         SLICE,
                         MAX_SCORE_VALUE,
                         MIN_SCORE_VALUE)
-from .validators import check_username
+from .validators import check_username, year_validator
 
 
 class NameSlugModel(models.Model):
@@ -37,17 +35,17 @@ class Title(models.Model):
         null=True,
         verbose_name='Автор'
     )
-    year = models.PositiveSmallIntegerField(
-        validators=[
-            MaxValueValidator(datetime.date.today().year)
-        ],
+    year = models.SmallIntegerField(
+        validators=(
+            year_validator,
+        ),
         verbose_name='Год',
+        db_index=True
     )
     description = models.TextField(null=True, verbose_name='Описание')
     genre = models.ManyToManyField(
         'Genre',
         verbose_name='Жанр',
-        db_index=True
     )
     category = models.ForeignKey(
         'Category',
@@ -92,7 +90,7 @@ class ApiUser(AbstractUser):
 
     username = models.CharField(
         'Логин', max_length=LENGTH_FOR_FIELD, unique=True,
-        validators=[check_username]
+        validators=(check_username,)
     )
     first_name = models.CharField(
         'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True
@@ -156,7 +154,7 @@ class Review(TextAuthorPubDateBaseModel):
     )
     score = models.PositiveSmallIntegerField(
         'Оценка',
-        validators=[
+        validators=(
             MaxValueValidator(
                 MAX_SCORE_VALUE,
                 SCORE_VALIDATOR_ERROR_MESSAGE
@@ -165,18 +163,18 @@ class Review(TextAuthorPubDateBaseModel):
                 MIN_SCORE_VALUE,
                 SCORE_VALIDATOR_ERROR_MESSAGE
             )
-        ])
+        ))
 
     class Meta(TextAuthorPubDateBaseModel.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         default_related_name = 'reviews'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='only_one_review_to_title_from_user'
-            )
-        ]
+            ),
+        )
 
 
 class Comment(TextAuthorPubDateBaseModel):
