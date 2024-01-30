@@ -125,7 +125,7 @@ class GetTokenAPIView(CreateAPIView):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (PermissionForReviewsAndComments,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
