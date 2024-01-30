@@ -90,7 +90,7 @@ class ApiUser(AbstractUser):
 
     username = models.CharField(
         'Логин', max_length=LENGTH_FOR_FIELD, unique=True,
-        validators=[check_username]
+        validators=(check_username,)
     )
     first_name = models.CharField(
         'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True

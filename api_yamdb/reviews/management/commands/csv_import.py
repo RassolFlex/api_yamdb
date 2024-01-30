@@ -37,7 +37,7 @@ class Command(BaseCommand):
                         except IntegrityError:
                             self.stdout.write(
                                 f'Object {model_name} ID:'
-                                f'{row.get('id')} already exists'
+                                f'{row.get("id")} already exists'
                             )
                             continue
                     self.stdout.write(
