@@ -1,5 +1,8 @@
 import re
+import datetime
+
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 from .constants import LENGTH_FOR_FIELD
 
@@ -18,3 +21,10 @@ def check_username(username):
     if not re.match(pattern, username):
         raise serializers.ValidationError('Invalid username.')
     return username
+
+
+def year_validator(value):
+    if value > datetime.datetime.now().year:
+        raise ValidationError(
+            f'Invalid year: {value}'
+        )

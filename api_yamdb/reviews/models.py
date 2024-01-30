@@ -12,7 +12,7 @@ from .constants import (LENGTH_FOR_FIELD,
                         SLICE,
                         MAX_SCORE_VALUE,
                         MIN_SCORE_VALUE)
-from .validators import check_username
+from .validators import check_username, year_validator
 
 
 class NameSlugModel(models.Model):
@@ -37,17 +37,17 @@ class Title(models.Model):
         null=True,
         verbose_name='Автор'
     )
-    year = models.PositiveSmallIntegerField(
-        validators=[
-            MaxValueValidator(datetime.date.today().year)
-        ],
+    year = models.SmallIntegerField(
+        validators=(
+            year_validator,
+        ),
         verbose_name='Год',
+        db_index=True
     )
     description = models.TextField(null=True, verbose_name='Описание')
     genre = models.ManyToManyField(
         'Genre',
         verbose_name='Жанр',
-        db_index=True
     )
     category = models.ForeignKey(
         'Category',

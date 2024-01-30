@@ -57,8 +57,7 @@ class TitleSerializerForWrite(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        serialized_data = TitleSerializerForRead(instance=instance).data
-        return serialized_data
+        return TitleSerializerForRead(instance=instance).data
 
 
 class TitleSerializerForRead(serializers.ModelSerializer):
