@@ -90,7 +90,7 @@ class ApiUser(AbstractUser):
 
     username = models.CharField(
         'Логин', max_length=LENGTH_FOR_FIELD, unique=True,
-        validators=[check_username]
+        validators=(check_username,)
     )
     first_name = models.CharField(
         'Имя', max_length=LENGTH_FOR_FIELD, null=True, blank=True
@@ -154,7 +154,7 @@ class Review(TextAuthorPubDateBaseModel):
     )
     score = models.PositiveSmallIntegerField(
         'Оценка',
-        validators=[
+        validators=(
             MaxValueValidator(
                 MAX_SCORE_VALUE,
                 SCORE_VALIDATOR_ERROR_MESSAGE
@@ -163,18 +163,18 @@ class Review(TextAuthorPubDateBaseModel):
                 MIN_SCORE_VALUE,
                 SCORE_VALIDATOR_ERROR_MESSAGE
             )
-        ])
+        ))
 
     class Meta(TextAuthorPubDateBaseModel.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         default_related_name = 'reviews'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='only_one_review_to_title_from_user'
-            )
-        ]
+            ),
+        )
 
 
 class Comment(TextAuthorPubDateBaseModel):

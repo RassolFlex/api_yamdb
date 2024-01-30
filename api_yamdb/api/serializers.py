@@ -127,7 +127,6 @@ class SignupSerializer(serializers.Serializer, ValidateUsernameMixin):
     def create(self, validated_data):
         email = validated_data['email']
         user, existing = ApiUser.objects.get_or_create(**validated_data)
-        user = ApiUser.objects.get(**validated_data)
         token = default_token_generator.make_token(user)
         send_mail(
             subject='confirmation_code',
