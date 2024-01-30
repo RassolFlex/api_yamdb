@@ -40,7 +40,9 @@ class Command(BaseCommand):
                                 f'{row.get('id')} already exists'
                             )
                             continue
-                    self.stdout.write(f'Data import finished for model: {model_name}')
+                    self.stdout.write(
+                        f'Data import finished for model: {model_name}'
+                    )
             except FileOpenException as error:
                 self.stdout.write(f'Ошибка при открытии файла: {error}')
                 continue
