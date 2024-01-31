@@ -171,7 +171,7 @@ class Review(TextAuthorPubDateBaseModel):
         default_related_name = 'reviews'
         constraints = (
             models.UniqueConstraint(
-                fields=['author', 'title'],
+                fields=('author', 'title'),
                 name='only_one_review_to_title_from_user'
             ),
         )

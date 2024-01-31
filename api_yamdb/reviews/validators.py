@@ -22,3 +22,4 @@ def year_validator(value):
         raise ValidationError(
             f'Invalid year: {value}'
         )
+    return value
